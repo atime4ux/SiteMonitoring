@@ -1,0 +1,372 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>libMyUtil</name>
+    </assembly>
+    <members>
+        <member name="M:libMyUtil.clsDate.StringToDatetime(System.String)">
+            <summary>
+            yyyyMMddHHmmss, yyyyMMdd를 Datetime형식으로 변환
+            </summary>
+        </member>
+        <member name="T:libMyUtil.clsWebpageCapture">
+            <summary>
+            clsWeb.WebpageCapture()에서 사용
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsFile.isIMG_extension(System.String)">
+            <summary>
+            jpg, jpeg, bmp, png 파일 확장자 판별
+            </summary>
+            <param name="fileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:libMyUtil.clsFile.isMOV_extension(System.String)">
+            <summary>
+            swf, avi, wmv, k3g 파일 확장자 판별
+            </summary>
+            <param name="fileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:libMyUtil.clsFile.SaveJPG(System.String)">
+            <summary>
+            jpg가 아닌 이미지 파일을 jpg로 저장후 jpg파일 경로 리턴
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsFile.MakeThumbnail(System.String,System.Int32)">
+            <summary>
+            썸네일 이미지 생성후 파일 경로 리턴
+            </summary>
+            <param name="imgWidth">썸네일 이미지 가로 픽셀</param>
+        </member>
+        <member name="M:libMyUtil.clsFile.FileSave(System.String,System.String,System.String)">
+            <summary>
+            url의 "이미지" 파일을 다운받아서 저장, 저장된 서버주소 리턴
+            </summary>
+            <param name="url">다운 받을 파일의 url</param>
+            <param name="urlBase">외부에서 저장된 파일에 액세스할 주소</param>
+            <param name="downPath">저장할 로컬 경로</param>
+        </member>
+        <member name="M:libMyUtil.clsFile.FileSave_NotIMG(System.String,System.String,System.String)">
+            <summary>
+            url의 파일을 다운받아서 저장, 저장된 서버주소 리턴
+            </summary>
+            <param name="url">다운 받을 파일의 url</param>
+            <param name="urlBase">외부에서 저장된 파일에 액세스할 주소</param>
+            <param name="downPath">저장할 로컬 경로</param>
+        </member>
+        <member name="M:libMyUtil.clsFile.GetFileNameFromUrl(System.String)">
+            <summary>
+            url에서 파일이름만 리턴
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsFile.GetUniqueFileName(System.String,System.String,System.Boolean)">
+            <summary>
+            파일이름 존재하면 이름 뒤에 숫자 추가(원본 파일, jpg파일, 썸네일))
+            </summary>
+            <param name="doesMakeDIR">디렉토리 생성 여부</param>
+        </member>
+        <member name="M:libMyUtil.clsFile.GetValidPath(System.String)">
+            <summary>
+            경로 뒤쪽에 디렉터리 수준 구분 문자를 검사, 추가
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsFile.MakeDir(System.String)">
+            <summary>
+            디렉토리 생성, 성공 true, 실패 false 리턴
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsFile.DownloadFromUrl(System.String,System.String)">
+            <summary>
+            다운로드 실패시 false
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsFile.DownloadFromUrl(System.String,System.String,System.String)">
+            <summary>
+            HTTP_REFERER를 체크하는 사이트에서 사용
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsFile.toBase62(System.UInt64)">
+            <summary>
+            "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+            </summary>
+            <param name="inputNum">UInt16~UInt64까지 가능</param>
+        </member>
+        <member name="M:libMyUtil.clsFile.writeLog(System.String)">
+            <summary>
+            로그 파일 기록
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsFile.writeLog(System.String,System.String)">
+            <summary>
+            로그 파일 기록
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsCmnDB.getConnection(System.String,System.String,System.String,System.String)">
+            <summary>
+            SqlConnection 리턴
+            </summary>
+            <param name="initialCatalogue">초기 접속될 DB</param>
+            <param name="dataSource">DB서버 주소</param>
+        </member>
+        <member name="M:libMyUtil.clsCmnDB.INSERT_DB(System.Data.SqlClient.SqlConnection,System.Data.SqlClient.SqlTransaction,System.String,System.String,System.String)">
+            <summary>
+            실패시 FAIL 리턴
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsCmnDB.UPDATE_DB(System.Data.SqlClient.SqlConnection,System.Data.SqlClient.SqlTransaction,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            실패시 FAIL 리턴
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsCmnDB.DELETE_DB(System.Data.SqlClient.SqlConnection,System.Data.SqlClient.SqlTransaction,System.String,System.String,System.String)">
+            <summary>
+            실패시 FAIL 리턴
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsCmnDB.getNewID(System.Data.SqlClient.SqlConnection,System.Data.SqlClient.SqlTransaction,System.String,System.String,System.String,System.String,System.Int32)">
+            <summary>
+            실패시 FAIL 리턴
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsCmnDB.chk_Duplicate(System.Data.SqlClient.SqlConnection,System.Data.SqlClient.SqlTransaction,System.String,System.String,System.String,System.String)">
+            <summary>
+            중복된 값이 없으면 "OK", 중복된 값이 있으면 "DUPE" 리턴
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsCmnDB.validateDS(System.Data.DataSet)">
+            <summary>
+            DATASET에 Table과 Rows가 존재하면 true
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsMSMQ.isQueueName(System.String)">
+            <summary>
+            큐 이름 형식이 맞으면 true
+            </summary>
+            <param name="queuePath"></param>
+            <returns></returns>
+        </member>
+        <member name="M:libMyUtil.clsMSMQ.canReadQueue(System.String)">
+            <summary>
+            큐를 읽을 수 있으면 true
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsMSMQ.queueMsgCnt(System.String)">
+            <summary>
+            해당 큐에 있는 메시지 갯수
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsMSMQ.sendData(System.String,System.Object)">
+            <summary>
+            오브젝트를 해당 큐로 전송
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsMSMQ.receiveData(System.String,System.Type[],System.Int32)">
+            <summary>
+            해당 큐에서 설정한 오브젝트 타입으로 수신, 시간이 초과되면 null 리턴
+            </summary>
+            <param name="timeOut">타임아웃(초)</param>
+            <returns></returns>
+        </member>
+        <member name="M:libMyUtil.clsMSMQ.peekData(System.String,System.Type[],System.Int32)">
+            <summary>
+            해당 큐에서 설정한 오브젝트 타입으로 큐 검색, 시간이 초과되면 null 리턴
+            </summary>
+            <param name="timeOut">타임아웃(초)</param>
+            <returns></returns>
+        </member>
+        <member name="M:libMyUtil.clsMSMQ.startAsyncReceiveData(System.String,System.Type[])">
+            <summary>
+            해당 큐에서 설정한 오브젝트 타입으로 비동기 수신 시작
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsMSMQ.endAsyncReceiveData(System.String,System.IAsyncResult)">
+            <summary>
+            해당 큐의 비동기 수신 종료
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsExcel.readExcel(System.String)">
+            <summary>
+            엑셀2007 이상의 파일(프로퍼티 엑셀 12.0)은 외부엔진 설치 필요, 실패시 빈 DataSet 반환
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsExcel.readExcel(System.String,System.String)">
+            <summary>
+            엑셀2007 이상의 파일(프로퍼티 엑셀 12.0)은 외부엔진 설치 필요, 실패시 빈 DataSet 반환
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsExcel.getSheetName(System.String)">
+            <summary>
+            엑셀 쉬트명 구하기, 실패시 null 반환
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsExcel.DS2Excel(System.Data.DataTable)">
+            <summary>
+            DataTable을 Excel로 변환해서 Response.Write로 기록
+            </summary>
+        </member>
+        <member name="T:libMyUtil.clsMail">
+            <summary>
+            Gmail을 통한 메일 발송
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsParse.parseGender(System.String)">
+            <summary>
+            성별 추출
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsParse.parseKorean(System.String)">
+            <summary>
+            한글만 추출
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsParse.parseNum_KOR(System.String,System.Int32,System.Int32,System.String)">
+            <summary>
+            숫자 또는 숫자와 문자 조합 추출
+            </summary>
+            <param name="min">숫자 최소 길이</param>
+            <param name="max">숫자 최대 길이</param>
+            <param name="suffix">숫자와 결합된 문자열들, '|'로 구분</param>
+        </member>
+        <member name="M:libMyUtil.clsParse.parseNum_AND_KOR(System.String,System.Int32,System.Int32,System.String)">
+            <summary>
+            숫자와 문자의 조함 추출
+            </summary>
+            <param name="min">숫자 최소 길이</param>
+            <param name="max">숫자 최대 길이</param>
+            <param name="suffix">숫자와 결합된 문자열들, '|'로 구분</param>
+        </member>
+        <member name="M:libMyUtil.clsParse.parseNum(System.String,System.Int32,System.Int32)">
+            <summary>
+            숫자만 추출
+            </summary>
+            <param name="min">숫자 최소 길이</param>
+            <param name="max">숫자 최대 길이</param>
+        </member>
+        <member name="M:libMyUtil.clsParse.parseReg(System.String,System.String)">
+            <summary>
+            메시지에 정규식에 포함하는 문자열이 있으면 반환
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsThread.SetLabel(System.Windows.Forms.Label,System.String)">
+            <summary>
+            스레드에서 라벨 텍스트 변경
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsThread.SetTextBox(System.Windows.Forms.TextBox,System.String)">
+            <summary>
+            스레드에서 라벨 텍스트 변경
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsThread.buttonToggle(System.Windows.Forms.Button,System.String,System.Boolean)">
+            <summary>
+            스레드에서 버튼 속성 변경
+            </summary>
+            <param name="str">텍스트</param>
+            <param name="On_Off">활성/비활성</param>
+        </member>
+        <!-- 잘못된 형식의 XML 주석은 "M:libMyUtil.clsConvert.HTMLtagToHTMLentity(System.String)" 멤버에 대해 무시됩니다. -->
+        <member name="T:libMyUtil.pageCallingInfo">
+            <summary>
+            웹페이지 호출 정보 클래스
+            </summary>
+        </member>
+        <member name="F:libMyUtil.pageCallingInfo.timeOut">
+            <summary>
+            밀리세컨드(ms)
+            </summary>
+        </member>
+        <member name="M:libMyUtil.pageCallingInfo.#ctor">
+            <summary>
+            url, postData는 "", result는 RESULT:00, 타임아웃은 5000
+            </summary>
+        </member>
+        <member name="M:libMyUtil.pageCallingInfo.setInfo(System.String,System.String,System.String,System.String,System.String,System.String,System.Int32)">
+            <summary>
+            웹페이지 호출 정보 설정
+            </summary>
+            <param name="Result">호출 성공 시 받을 결과</param>
+            <param name="TimeOut">타임 아웃 시간(초)</param>
+            <param name="FailCnt">재시도 횟수</param>
+        </member>
+        <member name="M:libMyUtil.pageCallingInfo.writeLog(System.String)">
+            <summary>
+            로그 기록
+            </summary>
+            <param name="Result">에러 결과</param>
+        </member>
+        <member name="T:libMyUtil.clsWeb">
+            <summary>
+            URLshorten메소드는 JSON for .NET 필요
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsWeb.encURL(System.String,System.String)">
+            <summary>
+            URL전송용 텍스트 인코딩
+            </summary>
+            <param name="EncType">EUC-KR, UTF-8</param>
+        </member>
+        <member name="M:libMyUtil.clsWeb.toHTML(System.String)">
+            <summary>
+            특수기호를 변환(&lt;, &gt;, &quot;)
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsWeb.WebpageCapture(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Drawing.Imaging.ImageFormat)">
+            <summary>
+            웹페이지 일부 화면 캡쳐, 저장된 파일 경로 반환
+            </summary>
+            <param name="URL"></param>
+            <param name="filename">경로를 포함한 파일 이름</param>
+            <param name="x">좌상단 X좌표</param>
+            <param name="y">좌상단 Y좌표</param>
+        </member>
+        <member name="M:libMyUtil.clsWeb.WebpageCapture(System.String,System.String,System.Drawing.Imaging.ImageFormat)">
+            <summary>
+            웹페이지 전체화면 캡쳐, 저장된 파일 경로 반환
+            </summary>
+            <param name="filename">경로를 포함한 파일 이름</param>
+        </member>
+        <member name="M:libMyUtil.clsWeb.WebpageCapture_noReturn(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Drawing.Imaging.ImageFormat)">
+            <summary>
+            웹페이지 일부 화면 캡쳐
+            </summary>
+            <param name="filename">경로를 포함한 파일 이름</param>
+        </member>
+        <member name="M:libMyUtil.clsWeb.WebpageCapture_noReturn(System.String,System.String,System.Drawing.Imaging.ImageFormat)">
+            <summary>
+            웹페이지 전체화면 캡쳐
+            </summary>
+            <param name="filename">경로를 포함한 파일 이름</param>
+        </member>
+        <member name="M:libMyUtil.clsWeb.URLshorten(System.String)">
+            <summary>
+            Google URL 줄임 서비스, 
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsWeb.DS2JsonString(System.Data.DataSet)">
+            <summary>
+            DataSet을 JSON 배열로 리턴 cmnfunc.js의 setOpenerfield_2 참조
+            </summary>
+        </member>
+        <member name="M:libMyUtil.clsWeb.SendPostData(System.String,System.String,System.String,System.Int32)">
+            <summary>
+            POST방식으로 데이터 전송
+            </summary>
+            <param name="timeOut">밀리세컨드</param>
+            <param name="EncodingType">ex) EUC-KR, UTF-8</param>
+            <returns>URL의 응답</returns>
+        </member>
+        <member name="M:libMyUtil.clsWeb.SendQueryString(System.String,System.String,System.Int32)">
+            <summary>
+            GET방식으로 데이터 전송
+            </summary>
+            <param name="timeOut">밀리세컨드</param>
+            <returns>URL의 응답</returns>
+        </member>
+        <member name="M:libMyUtil.clsWeb.isMobileDevice(System.Web.HttpRequest)">
+            <summary>
+            iphone, android는 true
+            </summary>
+        </member>
+    </members>
+</doc>
