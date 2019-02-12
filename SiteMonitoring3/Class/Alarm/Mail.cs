@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace SiteMonitoring3.Alarm
 {
-    public class AlarmMail
+    public class Mail
     {
         private string accountId { get; set; }
         private string accountPassword { get; set; }
         private string fromAddress { get; set; }
         private string toAddress { get; set; }
 
-        public AlarmMail(string id, string password, string mailFrom, string mailTo)
+        public Mail(string id, string password, string mailFrom, string mailTo)
         {
             this.accountId = id;
             this.accountPassword = password;
@@ -21,7 +17,7 @@ namespace SiteMonitoring3.Alarm
             this.toAddress = mailTo;
         }
 
-        public void SendMail(List<MonitoringItem> lst)
+        public void Send(List<MonitoringItem> lst)
         {
             AlarmMsg objMsg = new AlarmMsg(lst);
 

@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Script.Serialization;
 
 namespace SiteMonitoring3.Alarm
 {
-    public class AlarmJandi
+    public class Jandi
     {
         private string msgBody
         {
@@ -27,23 +24,23 @@ namespace SiteMonitoring3.Alarm
 
         private string webHookUrl { get; set; }
 
-        public AlarmJandi(string url)
+        public Jandi(string url)
         {
             this.webHookUrl = url;
         }
 
-        public void SendJandi(List<MonitoringItem> lst)
+        public void Send(List<MonitoringItem> lst)
         {
             AlarmMsg objMsg = new Alarm.AlarmMsg(lst);
-            SendJandi(this.webHookUrl, this.msgBody, this.msgColor, objMsg.Title, objMsg.Message);
+            Send(this.webHookUrl, this.msgBody, this.msgColor, objMsg.Title, objMsg.Message);
         }
 
-        public void SendJandi(string msgTitle, string msgContent)
+        public void Send(string msgTitle, string msgContent)
         {
-            SendJandi(this.webHookUrl, this.msgBody, this.msgColor, msgTitle, msgContent);
+            Send(this.webHookUrl, this.msgBody, this.msgColor, msgTitle, msgContent);
         }
 
-        private void SendJandi(string webHookUrl, string jandiTitle, string jandiColor, string msgTitle, string msgContent)
+        private void Send(string webHookUrl, string jandiTitle, string jandiColor, string msgTitle, string msgContent)
         {
             if (string.IsNullOrEmpty(webHookUrl) == false)
             {

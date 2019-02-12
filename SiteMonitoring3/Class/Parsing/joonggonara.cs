@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Net;
 using System.Linq;
-using libMyUtil;
+using System.Net;
 
 namespace SiteMonitoring3.Parsing
 {
@@ -20,19 +18,28 @@ namespace SiteMonitoring3.Parsing
         /// </summary>
         private MonitoringItem lastItem { get; set; }
 
+
         public bool isBlocked { get; set; }
 
-        System.Windows.Forms.TextBox txtStatus = null;
+
+        int limitPageNo = 5;
+
+
+        Action<string> FuncLog;
+
+
+        public Joonggonara(Action<string> funcLog)
+        {
+            FuncLog = funcLog;
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="item">최근 item, 없으면 null</param>
         /// <returns></returns>
-        public List<MonitoringItem> GetMonitoringList(System.Windows.Forms.TextBox statusControl)
+        public List<MonitoringItem> GetMonitoringList()
         {
-            txtStatus = statusControl;
-
             isBlocked = false;
 
             List<MonitoringItem> result = new List<MonitoringItem>();
@@ -40,18 +47,16 @@ namespace SiteMonitoring3.Parsing
             int pageNo = 1;
             if (lastItem == null)
             {
-                clsThread.SetTextBox(txtStatus, $"downloading page {pageNo}\r\n", true);
+                FuncLog($"downloading page {pageNo}");
                 result = parsingHTMLdocument(GetData(pageNo));
             }
             else
             {
-                clsThread.SetTextBox(txtStatus, $"get lastItemId {lastItem.itemId}\r\n", true);
-
-                int limitPageNo = 20;
+                FuncLog($"get lastItemId {lastItem.itemId}");
 
                 for (int i = 0; i < limitPageNo; i++)
                 {
-                    clsThread.SetTextBox(txtStatus, $"downloading page {pageNo}\r\n", true);
+                    FuncLog($"downloading page {pageNo}");
                     List<MonitoringItem> lstItem = parsingHTMLdocument(GetData(pageNo));
 
                     if (lstItem.Count > 0)
@@ -61,17 +66,18 @@ namespace SiteMonitoring3.Parsing
 
                         if (lstItem.Count(x => Convert.ToInt64(x.itemId) <= Convert.ToInt64(lastItem.itemId)) > 0)
                         {
-                            clsThread.SetTextBox(txtStatus, $"stop downloading\r\n", true);
+                            result.RemoveAll(x=> Convert.ToInt64(x.itemId) <= Convert.ToInt64(lastItem.itemId));
+                            FuncLog($"stop downloading");
                             break;
                         }
                         else
                         {
-                            clsThread.SetTextBox(txtStatus, $"max - {lstItem.Max(x=>Convert.ToInt64(x.itemId))}, min - {lstItem.Min(x => Convert.ToInt64(x.itemId))}\r\n", true);
+                            FuncLog($"max - {lstItem.Max(x => Convert.ToInt64(x.itemId))}, min - {lstItem.Min(x => Convert.ToInt64(x.itemId))}");
                         }
                     }
                     else
                     {
-                        clsThread.SetTextBox(txtStatus, $"blocked\r\n", true);
+                        FuncLog($"blocked");
                         isBlocked = true;
                         break;
                     }
@@ -84,7 +90,7 @@ namespace SiteMonitoring3.Parsing
                 string lastItemId = result.Max(x => Convert.ToInt64(x.itemId)).ToString();
                 lastItem = result.First(x => x.itemId == lastItemId);
 
-                clsThread.SetTextBox(txtStatus, $"set lastItemId {lastItemId}\r\n", true);
+                FuncLog($"set lastItemId {lastItemId}");
             }
             
             return result;
@@ -112,7 +118,7 @@ namespace SiteMonitoring3.Parsing
             catch (Exception ex)
             {
                 libMyUtil.clsFile.writeLog(ex.ToString());
-                clsThread.SetTextBox(txtStatus, $"err : {ex.Message}\r\n", true);
+                FuncLog($"err : {ex.Message}");
             }
 
             if (doc.DocumentNode.HasChildNodes)
@@ -121,7 +127,7 @@ namespace SiteMonitoring3.Parsing
             }
             else
             {
-                clsThread.SetTextBox(txtStatus, $"download data is empty\r\n", true);
+                FuncLog($"download data is empty");
                 doc = null;
             }
 
@@ -182,17 +188,17 @@ namespace SiteMonitoring3.Parsing
                     }
                     else
                     {
-                        clsThread.SetTextBox(txtStatus, $"could not find article area\r\n", true);
+                        FuncLog($"could not find article area");
                     }
                 }
                 else
                 {
-                    clsThread.SetTextBox(txtStatus, $"could not find main-area\r\n", true);
+                    FuncLog($"could not find main-area");
                 }
             }
             else
             {
-                clsThread.SetTextBox(txtStatus, $"document is null\r\n", true);
+                FuncLog($"document is null");
             }
 
             return lstItem;

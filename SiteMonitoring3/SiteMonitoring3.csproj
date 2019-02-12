@@ -54,15 +54,13 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnimationNotify.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="AnimationNotify.designer.cs">
-      <DependentUpon>AnimationNotify.cs</DependentUpon>
-    </Compile>
-    <Compile Include="AlarmModule\AlarmJandi.cs" />
-    <Compile Include="AlarmModule\AlarmMail.cs" />
-    <Compile Include="AlarmModule\AlarmMsg.cs" />
+    <Compile Include="Class\Alarm\Jandi.cs" />
+    <Compile Include="Class\Alarm\Mail.cs" />
+    <Compile Include="Class\Alarm\AlarmMsg.cs" />
+    <Compile Include="Class\Helper\Common.cs" />
+    <Compile Include="Class\Helper\Thread.cs" />
+    <Compile Include="Class\Filter.cs" />
+    <Compile Include="Class\Keyword.cs" />
     <Compile Include="Class\MonitoringItem.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -70,12 +68,9 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="ParsingModule\joonggonara.cs" />
+    <Compile Include="Class\Parsing\joonggonara.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="AnimationNotify.resx">
-      <DependentUpon>AnimationNotify.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
