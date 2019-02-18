@@ -1,20 +1,46 @@
-﻿
-using libCommon;
+﻿using System;
+using System.IO;
 
 namespace SiteMonitoring3.Helper
 {
     public class Common
     {
-        clsUtil objUtil = null;
+        libCommon.clsUtil objUtil = null;
 
         public Common()
         {
-            objUtil = new clsUtil();
+            objUtil = new libCommon.clsUtil();
         }
 
-        public string getAppCfg(string key)
+        public string GetAppCfg(string key)
         {
             return objUtil.getAppCfg(key);
+        }
+
+        public void OverwriteFile(string fileFullPath, string text)
+        {
+            try
+            {
+                File.WriteAllText(fileFullPath, text);
+            }
+            catch (SystemException ex)
+            {
+                //엑세스 이상
+            }
+        }
+
+        public string ReadFile(string fileFullPath)
+        {
+            string result = "";
+
+            try
+            {
+                result = File.ReadAllText(fileFullPath);
+            }
+            catch (Exception ex)
+            { }
+
+            return result;
         }
     }
 }

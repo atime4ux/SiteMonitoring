@@ -1,4 +1,7 @@
-﻿namespace SiteMonitoring3
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
+
+namespace SiteMonitoring3
 {
     public class Keyword
     {
@@ -11,6 +14,12 @@
             this.requireKeywords = require;
             this.optionKeywords = option;
             this.exceptKeywords = except;
+        }
+
+        public List<Keyword> GetListFromJson(string json)
+        {
+            List<Keyword> result = JsonConvert.DeserializeObject<List<Keyword>>(json);
+            return result;
         }
     }
 }

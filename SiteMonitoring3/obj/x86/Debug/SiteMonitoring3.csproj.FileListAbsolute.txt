@@ -64,3 +64,5 @@ C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.Form1
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.Properties.Resources.resources
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.csproj.GenerateResource.Cache
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.csprojResolveAssemblyReference.cache
+C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\Newtonsoft.Json.dll
+C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\Newtonsoft.Json.xml

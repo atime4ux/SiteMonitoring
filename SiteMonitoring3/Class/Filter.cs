@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace SiteMonitoring3
 {
@@ -6,40 +8,76 @@ namespace SiteMonitoring3
     {
         libCommon.clsUtil objUtil = new libCommon.clsUtil();
 
-        public bool isExcepted = false;
+        public FilterResult objFilterResult { get; set; }
 
-        public bool FilterMonitoringItem(MonitoringItem item, Keyword keyword)
+        public Filter()
         {
-            bool result = false;
+            objFilterResult = new FilterResult();
+        }
 
-            string[] arrSrchWord01 = objUtil.Split(keyword.requireKeywords.ToUpper(), " ");
-            string[] arrSrchWord02 = objUtil.Split(keyword.optionKeywords.ToUpper(), " ");
-            string[] arrExceptWord = objUtil.Split(keyword.exceptKeywords.ToUpper(), " ");
-
-            if (keyword.requireKeywords.Length > 0)
+        public FilterResult FilterItems(List<MonitoringItem> lstItem, List<Keyword> lstKeyword)
+        {
+            foreach (MonitoringItem item in lstItem)
             {
-                if (IsContainSearchWords(item, arrSrchWord01, arrExceptWord, true))
+                foreach (Keyword keyword in lstKeyword)
                 {
-                    if (arrSrchWord02[0].Length > 0)
+                    bool result = false;
+
+                    string[] arrRequireKeywords = objUtil.Split(keyword.requireKeywords.ToUpper(), " ");
+                    string[] arrOptionKeywords = objUtil.Split(keyword.optionKeywords.ToUpper(), " ");
+                    string[] arrExceptKeywords = objUtil.Split(keyword.exceptKeywords.ToUpper(), " ");
+
+                    if (keyword.requireKeywords.Length > 0)
                     {
-                        result = IsContainSearchWords(item, arrSrchWord02, arrExceptWord, false);
+                        if (FindSearchWords(item, arrRequireKeywords, arrExceptKeywords, true) != "")
+                        {
+                            if (arrOptionKeywords[0].Length > 0)
+                            {
+                                if (FindSearchWords(item, arrOptionKeywords, arrExceptKeywords, false) != "")
+                                {
+                                    result = true;
+                                }
+                            }
+                            else
+                            {
+                                result = true;
+                            }
+                        }
+                    }
+                    else if (keyword.optionKeywords.Length > 0)
+                    {
+                        if (FindSearchWords(item, arrOptionKeywords, arrExceptKeywords, false) != "")
+                        {
+                            result = true;
+                        }
                     }
                     else
                     {
                         result = true;
                     }
+
+                    if (result == true)
+                    {
+                        string exceptWord = FindExceptWords(item, arrExceptKeywords);
+                        if (exceptWord == "")
+                        {
+                            objFilterResult.lstFiltered.Add(item);
+                            break;
+                        }
+                        else
+                        {
+                            //제외 목록에 추가
+                            objFilterResult.lstExcepted.Add(new ExceptedItem() {
+                                item = item,
+                                exceptWord = exceptWord
+                            });
+                            result = false;
+                        }
+                    }
                 }
             }
-            else if (keyword.optionKeywords.Length > 0)
-            {
-                result = IsContainSearchWords(item, arrSrchWord02, arrExceptWord, false);
-            }
-            else
-            {
-                result = true;
-            }
 
-            return result;
+            return objFilterResult;
         }
 
         /// <summary>
@@ -47,9 +85,9 @@ namespace SiteMonitoring3
         /// </summary>
         /// <param name="str">검사할 문자열</param>
         /// <param name="arrSearchWord">검색어가 들어간 배열</param>
-        private bool IsContainSearchWords(MonitoringItem item, string[] arrSearchWord, string[] arrExceptWord, bool isSearchAllWord)
+        private string FindSearchWords(MonitoringItem item, string[] arrSearchWord, string[] arrExceptWord, bool isSearchAllWord)
         {
-            bool result = false;
+            string result = "";
 
             string itemTitle = item.itemTitle.Trim().Replace(" ", "");
 
@@ -57,31 +95,18 @@ namespace SiteMonitoring3
             {
                 if (isSearchAllWord)
                 {
+                    //모든 단어가 포함되어야 함
                     if (arrSearchWord.Where(x => itemTitle.IndexOf(x) >= 0 || x.Trim().Length == 0).Count() == arrSearchWord.Length)
                     {
-                        if (IsContainExceptWords(itemTitle, arrExceptWord) == true)
-                        {
-                            isExcepted = true;
-                        }
-                        else
-                        {
-                            result = true;
-                        }
+                        result = arrSearchWord[0];
                     }
                 }
                 else
                 {
-                    var objSearch = arrSearchWord.Where(x => itemTitle.IndexOf(x) >= 0 || x.Trim().Length == 0).FirstOrDefault();
-                    if (objSearch != null)
+                    string searchWord = arrSearchWord.Where(x => itemTitle.IndexOf(x) >= 0 || x.Trim().Length == 0).FirstOrDefault();
+                    if (string.IsNullOrEmpty(searchWord) == false)
                     {
-                        if (IsContainExceptWords(itemTitle, arrExceptWord) == true)
-                        {
-                            isExcepted = true;
-                        }
-                        else
-                        {
-                            result = true;
-                        }
+                        result = searchWord;
                     }
                 }
             }
@@ -89,16 +114,39 @@ namespace SiteMonitoring3
             return result;
         }
 
-        private bool IsContainExceptWords(string itemTitle, string[] arrExceptWord)
+        private string FindExceptWords(MonitoringItem item, string[] arrExceptWord)
         {
-            bool result = false;
+            string result = "";
 
-            if (arrExceptWord.Length > 0 && arrExceptWord[0].Trim().Length > 0 && arrExceptWord.Count(x => itemTitle.Contains(x)) > 0)
+            string itemTitle = item.itemTitle;
+            if (arrExceptWord.Length > 0 && arrExceptWord[0].Trim().Length > 0)
             {
-                result = true;
+                string exceptWord = arrExceptWord.Where(x => itemTitle.Contains(x)).FirstOrDefault();
+                if (string.IsNullOrEmpty(exceptWord) == false)
+                {
+                    result = exceptWord;
+                }
             }
 
             return result;
         }
+    }
+
+    public class FilterResult
+    {
+        public List<MonitoringItem> lstFiltered { get; set; }
+        public List<ExceptedItem> lstExcepted { get; set; }
+
+        public FilterResult()
+        {
+            lstFiltered = new List<MonitoringItem>();
+            lstExcepted = new List<ExceptedItem>();
+        }
+    }
+
+    public class ExceptedItem
+    {
+        public MonitoringItem item { get; set; }
+        public string exceptWord { get; set; }
     }
 }

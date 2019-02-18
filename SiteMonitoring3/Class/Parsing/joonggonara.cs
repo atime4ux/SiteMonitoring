@@ -12,6 +12,7 @@ namespace SiteMonitoring3.Parsing
     {
         private string listUrl = "https://cafe.naver.com/ArticleList.nhn?search.clubid=10050146&search.boardtype=L&search.questionTab=A&search.totalCount=151&search.page=";
         private string itemBaseUrl = "https://cafe.naver.com/joonggonara?iframe_url=";
+        private string itemBaseUrlMobile = "https://m.cafe.naver.com/ArticleRead.nhn?clubid=10050146&articleid={0}&page=1&boardtype=L";
 
         /// <summary>
         /// 지난번 itemId 여기 도달할때까지 처리한다
@@ -21,7 +22,7 @@ namespace SiteMonitoring3.Parsing
 
         public bool isBlocked { get; set; }
 
-
+        public int sleepSecond = 10;
         int limitPageNo = 5;
 
 
@@ -173,10 +174,12 @@ namespace SiteMonitoring3.Parsing
                                 if (paramKey == "articleid" && arrParam.Length == 2)
                                 {
                                     articleId = arrParam[1];
+                                    break;
                                 }
                             }
 
-                            articleUrl = itemBaseUrl + articleUrl.Replace("&", "%26");
+                            //articleUrl = itemBaseUrl + articleUrl.Replace("&", "%26");
+                            articleUrl = string.Format(itemBaseUrlMobile, articleId);
 
                             lstItem.Add(new MonitoringItem()
                             {

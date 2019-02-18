@@ -1,7 +1,9 @@
-﻿using SiteMonitoring3.Alarm;
+﻿using Newtonsoft.Json;
+using SiteMonitoring3.Alarm;
 using SiteMonitoring3.Parsing;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 
 
@@ -14,18 +16,54 @@ namespace SiteMonitoring3
 
 
         System.Threading.Thread threadMainJob;
-        
+
+
+        Joonggonara objJoonggonara = null;
+
 
         Jandi objJandi = null;
         Mail objMail = null;
 
 
-        bool loopFlag;
+        bool loopFlag = false;
 
 
         readonly int minSleepSecond = 10;
-        int curSleepSecond = 10;
-        
+
+
+        private string lastKeywordFullPath
+        {
+            get
+            {
+                string path = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
+                string fileName = "lastKeyword.log";
+
+                return path + "\\" + fileName;
+            }
+        }
+
+
+        public List<Keyword> lstKeyword
+        {
+            get
+            {
+                List<Keyword> result = null;
+
+                if (txtKeywordJson.Text.Trim().Length > 0)
+                {
+                    try
+                    {
+                        result = JsonConvert.DeserializeObject<List<Keyword>>(txtKeywordJson.Text);
+                    }
+                    catch (Exception ex)
+                    { }
+                }
+
+                return result;
+            }
+        }
+
+
 
         public Form1()
         {
@@ -36,21 +74,37 @@ namespace SiteMonitoring3
         private void Form1_Load(object sender, EventArgs e)
         {
             InitControl();
-            loopFlag = false;
+            InitParser();
+        }
+
+
+        private void InitParser()
+        {
+            objJoonggonara = new Joonggonara(WriteStatus);
         }
 
 
         private void InitControl()
         {
             Application.ApplicationExit += new EventHandler(Application_ApplicationExit);
-            
+
             this.lblSleepRemain.Text = "";
+
+            string jsonKeyword = GetLastKeyword();
+            if (string.IsNullOrEmpty(jsonKeyword) == true)
+            {
+                jsonKeyword = JsonConvert.SerializeObject(new List<Keyword>() {
+                    new Keyword("필수 검색어1", "선택 검색어1", "제외 검색어1"),
+                    new Keyword("필수 검색어2", "선택 검색어2", "제외 검색어2")
+                }, Formatting.Indented);
+            }
+            txtKeywordJson.Text = jsonKeyword;
         }
 
 
         private void InitAlarm()
         {
-            objJandi = new Jandi(commonHelper.getAppCfg("jandiWebHookUrl"));
+            objJandi = new Jandi(commonHelper.GetAppCfg("jandiWebHookUrl"));
             objMail = new Mail(txtGmailID.Text,
                                     txtGmailPass.Text,
                                     txtReceiveMailAddress.Text,
@@ -85,11 +139,9 @@ namespace SiteMonitoring3
                     threadHelper.SetTextBox(txtGmailPass, "", false);
                     threadHelper.SetTextBox(txtReceiveMailAddress, "", false);
                     threadHelper.SetCheckBox(chkUsingMailAccount, false);
-                    threadHelper.SetTextBox(txtSrchWord01, "", false);
-                    threadHelper.SetTextBox(txtSrchWord02, "", false);
-                    threadHelper.SetTextBox(txtExceptWord, "", false);
+                    threadHelper.SetTextBox(txtKeywordJson, "", false);
                     threadHelper.SetLabel(lblSleepRemain, "");
-                    threadHelper.buttonToggle(btnSendTestMail, "", false);
+                    threadHelper.buttonToggle(btnSendTestMsg, "", false);
                     threadHelper.buttonToggle(btnRun, "중지", true);
                     threadHelper.SetTextBox(txtFilteredItemList, "", "N");
                 }));
@@ -98,11 +150,9 @@ namespace SiteMonitoring3
             {
                 changeStateThread = new System.Threading.Thread(new System.Threading.ThreadStart(delegate {
                     threadHelper.buttonToggle(btnRun, "중지중...", true);
-                    threadHelper.buttonToggle(btnSendTestMail, "", true);
+                    threadHelper.buttonToggle(btnSendTestMsg, "", true);
                     threadHelper.SetLabel(lblSleepRemain, "");
-                    threadHelper.SetTextBox(txtExceptWord, "", true);
-                    threadHelper.SetTextBox(txtSrchWord02, "", true);
-                    threadHelper.SetTextBox(txtSrchWord01, "", true);
+                    threadHelper.SetTextBox(txtKeywordJson, "", true);
                     threadHelper.SetCheckBox(chkUsingMailAccount, true);
                     threadHelper.SetTextBox(txtReceiveMailAddress, "", true);
                     threadHelper.SetTextBox(txtGmailPass, "", true);
@@ -132,14 +182,58 @@ namespace SiteMonitoring3
         }
 
 
+        private void WriteAllItem(List<MonitoringItem> lstItem)
+        {
+            threadHelper.SetTextBox(txtItemList, "", "N");
+            foreach (MonitoringItem item in lstItem)
+            {
+                threadHelper.SetTextBox(txtItemList, item.itemTitle + "\r\n", "Y");
+            }
+        }
+
+
+        private void WriteFilteredItem(List<MonitoringItem> lstFilteredItem)
+        {
+            foreach (MonitoringItem filtered in lstFilteredItem)
+            {
+                threadHelper.SetTextBox(txtFilteredItemList, $"{filtered.itemTitle}[{System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]\r\n", "Y");
+            }
+        }
+
+
+        private void WriteExceptedItem(List<ExceptedItem> lstExceptedItem)
+        {
+            foreach (ExceptedItem excepted in lstExceptedItem)
+            {
+                threadHelper.SetTextBox(txtFilteredItemList, $"{excepted.item.itemTitle}[{System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]제외됨({excepted.exceptWord})\r\n", "Y");
+            }
+        }
+
+
+        private void SaveKeyword()
+        {
+            commonHelper.OverwriteFile(lastKeywordFullPath, txtKeywordJson.Text);
+        }
+
+
+        private string GetLastKeyword()
+        {
+            return commonHelper.ReadFile(lastKeywordFullPath);
+        }
+
+
         private void StartAndStop()
         {
-            if (txtSrchWord01.Text.Trim().Length > 0 || txtSrchWord02.Text.Trim().Length > 0)
+            if (lstKeyword != null
+                && (lstKeyword.Count(x => x.requireKeywords.Trim().Length > 0
+                    || x.optionKeywords.Trim().Length > 0) > 0))
             {
                 if (!loopFlag)
                 {
                     //start
                     InitAlarm();
+
+                    SaveKeyword();
 
                     loopFlag = true;
                     changeRunningState();
@@ -164,61 +258,45 @@ namespace SiteMonitoring3
         private void SubJob()
         {
             WriteStatus("start");
-
-            Joonggonara objJoonggonara = new Joonggonara(WriteStatus);
-            Keyword objKeyword = new Keyword(txtSrchWord01.Text, txtSrchWord02.Text, txtExceptWord.Text);
-
+            
 
             WriteStatus("downloading data");
             List<MonitoringItem> lstAll = objJoonggonara.GetMonitoringList();
-            List<MonitoringItem> lstFiltered = new List<MonitoringItem>();
+
 
             if (objJoonggonara.isBlocked == false)
             {
                 if (lstAll.Count < 15)
                 {
-                    curSleepSecond = curSleepSecond * 2;
+                    objJoonggonara.sleepSecond = objJoonggonara.sleepSecond * 2;
                 }
                 else
                 {
-                    curSleepSecond = Math.Max(minSleepSecond, curSleepSecond / 2);
+                    objJoonggonara.sleepSecond = Math.Max(minSleepSecond, objJoonggonara.sleepSecond / 2);
                 }
 
                 WriteStatus($"success get {lstAll.Count} items");
 
-                threadHelper.SetTextBox(txtItemList, "", "N");
-                foreach (MonitoringItem item in lstAll)
+                WriteAllItem(lstAll);
+
+
+                FilterResult filterResult = new Filter().FilterItems(lstAll, lstKeyword);
+                WriteFilteredItem(filterResult.lstFiltered);
+                WriteExceptedItem(filterResult.lstExcepted);
+
+
+                if (filterResult.lstFiltered.Count > 0)
                 {
-                    threadHelper.SetTextBox(txtItemList, item.itemTitle + "\r\n", "Y");
-
-                    Filter objFilter = new Filter();
-                    if (objFilter.FilterMonitoringItem(item, objKeyword) == true)
-                    {
-                        lstFiltered.Add(item);
-                        threadHelper.SetTextBox(txtFilteredItemList, $"{item.itemTitle}[{System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]\r\n", "Y");
-                    }
-                    else
-                    {
-                        if (objFilter.isExcepted == true)
-                        {
-                            threadHelper.SetTextBox(txtFilteredItemList, $"{item.itemTitle}[{System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]제외됨\r\n", "Y");
-                        }
-                    }
-                }
-
-
-                if (lstFiltered.Count > 0)
-                {
-                    WriteStatus($"found {lstFiltered.Count} items");
+                    WriteStatus($"found {filterResult.lstFiltered.Count} items");
 
                     if (ValidateMailAccountInfo())
                     {
-                        objMail.Send(lstFiltered);
+                        objMail.Send(filterResult.lstFiltered);
                     }
 
 
-                    WriteStatus($"send jandi msg for {lstFiltered.Count} items");
-                    objJandi.Send(lstFiltered);
+                    WriteStatus($"send jandi msg for {filterResult.lstFiltered.Count} items");
+                    objJandi.Send(filterResult.lstFiltered);
                 }
             }
             else
@@ -242,12 +320,12 @@ namespace SiteMonitoring3
 
                 if (loopFlag)
                 {
-                    WriteStatus($"start sleep {curSleepSecond} sec");
-                    for (int i = 0; i < curSleepSecond; i++)
+                    WriteStatus($"start sleep {objJoonggonara.sleepSecond} sec");
+                    for (int i = 0; i < objJoonggonara.sleepSecond; i++)
                     {
                         if (loopFlag == true)
                         {
-                            threadHelper.SetLabel(lblSleepRemain, $"sleep remain {(curSleepSecond - i).ToString()}");
+                            threadHelper.SetLabel(lblSleepRemain, $"sleep remain {(objJoonggonara.sleepSecond - i).ToString()}");
                             System.Threading.Thread.Sleep(1000);
                         }
                         else
@@ -277,7 +355,7 @@ namespace SiteMonitoring3
         }
 
 
-        private void btnSendTestMail_Click(object sender, EventArgs e)
+        private void btnSendTestMsg_Click(object sender, EventArgs e)
         {
             InitAlarm();
 
@@ -308,15 +386,6 @@ namespace SiteMonitoring3
             else
             {
                 txtReceiveMailAddress.Enabled = true;
-            }
-        }
-
-
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            if (FormWindowState.Minimized == this.WindowState)
-            {
-                this.Hide();
             }
         }
     }

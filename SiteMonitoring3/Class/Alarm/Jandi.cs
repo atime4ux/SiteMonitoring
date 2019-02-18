@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
-using System.Web.Script.Serialization;
+using Newtonsoft.Json;
 
 namespace SiteMonitoring3.Alarm
 {
@@ -44,7 +44,7 @@ namespace SiteMonitoring3.Alarm
         {
             if (string.IsNullOrEmpty(webHookUrl) == false)
             {
-                string json = new JavaScriptSerializer().Serialize(new
+                string json = JsonConvert.SerializeObject(new
                 {
                     body = jandiTitle,
                     connectColor = jandiColor,
