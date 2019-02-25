@@ -62,7 +62,7 @@ namespace SiteMonitoring3
             string jsonMonitoringInfo = GetLastMonitoringInfoFile();
             if (string.IsNullOrEmpty(jsonMonitoringInfo) == true)
             {
-                jsonMonitoringInfo = JsonConvert.SerializeObject(Monitoring.GetMonitoringInfoSample(), Formatting.Indented);
+                jsonMonitoringInfo = JsonConvert.SerializeObject(Monitoring.GetSampleMonitoringInfo(), Formatting.Indented);
             }
             txtMonitoringInfoJson.Text = jsonMonitoringInfo;
         }
@@ -174,11 +174,11 @@ namespace SiteMonitoring3
                 //start
                 SaveMonitoringInfoFile();
 
-                Monitoring monitoring = new Monitoring(monitoringInfoJson, GetLoopFlag, WriteStatus, null, WriteFilteredItem, WriteExceptedItem, WriteSleepStatus);
+                Monitoring monitoring = new Monitoring(monitoringInfoJson, GetLoopFlag, WriteStatus, WriteAllItem, WriteFilteredItem, WriteExceptedItem, WriteSleepStatus);
 
                 loopFlag = true;
                 changeRunningState();
-                threadMainJob = new System.Threading.Thread(new System.Threading.ThreadStart(monitoring.MainJob));
+                threadMainJob = new System.Threading.Thread(new System.Threading.ThreadStart(monitoring.RunMonitoring));
                 threadMainJob.Name = "loopStart";
                 threadMainJob.Start();
             }
