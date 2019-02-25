@@ -174,7 +174,7 @@ namespace SiteMonitoring3
                 //start
                 SaveMonitoringInfoFile();
 
-                Monitoring monitoring = new Monitoring(monitoringInfoJson, GetLoopFlag, WriteStatus, WriteAllItem, WriteFilteredItem, WriteExceptedItem, WriteSleepStatus);
+                Monitoring monitoring = new Monitoring(monitoringInfoJson, GetLoopFlag, WriteStatus, null, WriteFilteredItem, WriteExceptedItem, WriteSleepStatus);
 
                 loopFlag = true;
                 changeRunningState();
