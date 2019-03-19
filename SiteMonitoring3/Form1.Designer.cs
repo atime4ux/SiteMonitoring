@@ -69,12 +69,12 @@
             // 
             // txtLog
             // 
-            this.txtLog.Location = new System.Drawing.Point(12, 197);
+            this.txtLog.Location = new System.Drawing.Point(470, 41);
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtLog.Size = new System.Drawing.Size(760, 80);
+            this.txtLog.Size = new System.Drawing.Size(300, 237);
             this.txtLog.TabIndex = 13;
             // 
             // txtItemList
@@ -110,7 +110,7 @@
             // 
             this.txtMonitoringInfoJson.Location = new System.Drawing.Point(12, 41);
             this.txtMonitoringInfoJson.Name = "txtMonitoringInfoJson";
-            this.txtMonitoringInfoJson.Size = new System.Drawing.Size(760, 150);
+            this.txtMonitoringInfoJson.Size = new System.Drawing.Size(452, 237);
             this.txtMonitoringInfoJson.TabIndex = 20;
             this.txtMonitoringInfoJson.Text = "";
             // 

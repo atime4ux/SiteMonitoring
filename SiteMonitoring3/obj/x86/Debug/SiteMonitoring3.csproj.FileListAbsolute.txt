@@ -63,10 +63,10 @@ C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\SiteMonitoring3.pdb
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.Form1.resources
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.Properties.Resources.resources
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.csproj.GenerateResource.Cache
-C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.csprojResolveAssemblyReference.cache
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\Newtonsoft.Json.dll
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\libMyUtil.dll
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\LibSiteMonitoring.dll
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\HtmlAgilityPack.dll
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\libCommon.dll
 C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\bin\Debug\LibSiteMonitoring.pdb
+C:\wwwrootGit\SiteMonitoring\SiteMonitoring3\obj\x86\Debug\SiteMonitoring3.csprojResolveAssemblyReference.cache
