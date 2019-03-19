@@ -1,0 +1,19 @@
+[
+  {
+    "lstKeyword": [
+      {
+        "requireKeywords": "",
+        "optionKeywords": "",
+        "exceptKeywords": "",
+        "minPrice": 20000,
+        "maxPrice": 50000
+      }
+    ],
+    "lstAlarmInfo": [
+      {
+        "alarmType": "jandi",
+        "connectionString": "https://wh.jandi.com/connect-api/webhook/12836675/889a45e7ca80a4b2fd47071071ccfd88"
+      }
+    ]
+  }
+]

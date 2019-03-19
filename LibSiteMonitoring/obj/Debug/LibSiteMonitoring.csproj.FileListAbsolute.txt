@@ -1,0 +1,8 @@
+C:\wwwrootGit\SiteMonitoring\LibSiteMonitoring\bin\Debug\LibSiteMonitoring.dll
+C:\wwwrootGit\SiteMonitoring\LibSiteMonitoring\bin\Debug\LibSiteMonitoring.pdb
+C:\wwwrootGit\SiteMonitoring\LibSiteMonitoring\bin\Debug\HtmlAgilityPack.dll
+C:\wwwrootGit\SiteMonitoring\LibSiteMonitoring\bin\Debug\libCommon.dll
+C:\wwwrootGit\SiteMonitoring\LibSiteMonitoring\bin\Debug\libMyUtil.dll
+C:\wwwrootGit\SiteMonitoring\LibSiteMonitoring\bin\Debug\Newtonsoft.Json.dll
+C:\wwwrootGit\SiteMonitoring\LibSiteMonitoring\obj\Debug\LibSiteMonitoring.dll
+C:\wwwrootGit\SiteMonitoring\LibSiteMonitoring\obj\Debug\LibSiteMonitoring.pdb
