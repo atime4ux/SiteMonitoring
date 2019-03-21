@@ -5,7 +5,7 @@ namespace LibSiteMonitoring.Parsing
 {
     public interface IParsing
     {
-        ParsingTarget GetParsingType();
+        ParsingTarget GetParsingTarget();
 
         void SetSleepSecond(int sec);
 

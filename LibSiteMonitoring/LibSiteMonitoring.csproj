@@ -63,11 +63,13 @@
     <Compile Include="Alarm\Jandi.cs" />
     <Compile Include="Alarm\Mail.cs" />
     <Compile Include="Helper\Common.cs" />
-    <Compile Include="Model\Filter.cs" />
+    <Compile Include="Filter.cs" />
     <Compile Include="Model\Keyword.cs" />
+    <Compile Include="Model\FilterResult.cs" />
     <Compile Include="Model\MonitoringInfo.cs" />
     <Compile Include="Model\MonitoringItem.cs" />
     <Compile Include="Monitoring.cs" />
+    <Compile Include="Parsing\BaseParsing.cs" />
     <Compile Include="Parsing\IParsing.cs" />
     <Compile Include="Parsing\joonggonara.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

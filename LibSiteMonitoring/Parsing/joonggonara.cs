@@ -1,4 +1,5 @@
-﻿using LibSiteMonitoring.Model;
+﻿using LibSiteMonitoring.Helper;
+using LibSiteMonitoring.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,20 @@ namespace LibSiteMonitoring.Parsing
     /// <summary>
     /// 중고나라
     /// </summary>
-    public class Joonggonara : IParsing
+    public class Joonggonara : BaseParsing, IParsing
     {
+        public enum Category
+        {
+            [StringValue("")]
+            전체,
+            [StringValue("749")]
+            태블릿
+        }
+
         /// <summary>
         /// search.boardtype
         /// L - 제목
-        /// I - 앨범
+        /// I - 앨범(금액 노출)
         /// </summary>
         private string BoardType
         {
@@ -24,15 +33,11 @@ namespace LibSiteMonitoring.Parsing
             }
         }
 
-        /// <summary>
-        /// search.menuid
-        /// 749 - 태블릿
-        /// </summary>
         private string MenuId
         {
             get
             {
-                return "749";
+                return new Common().GetStringValue(category);
             }
         }
 
@@ -44,51 +49,42 @@ namespace LibSiteMonitoring.Parsing
             }
         }
 
-        private string itemBaseUrl = "https://cafe.naver.com/joonggonara?iframe_url=";
-        private string itemBaseUrlMobile = "https://m.cafe.naver.com/ArticleRead.nhn?clubid=10050146&articleid={0}&page=1&boardtype=L";
+        private string itemBaseUrl
+        {
+            get
+            {
+                return "https://cafe.naver.com/joonggonara?iframe_url=";
+            }
+        }
 
-        /// <summary>
-        /// 지난번 itemId 여기 도달할때까지 처리한다
-        /// </summary>
-        private MonitoringItem lastItem { get; set; }
+        private string itemBaseUrlMobile
+        {
+            get
+            {
+                return "https://m.cafe.naver.com/ArticleRead.nhn?clubid=10050146&articleid={0}&page=1&boardtype=L";
+            }
+        }
+
+        private int limitPageNo
+        {
+            get
+            {
+                return 5;
+            }
+        }
 
 
-        /// <summary>
-        /// 지난번 실행된 시간
-        /// </summary>
-        private DateTime lastRunDate = DateTime.Now;
-
-
-        private bool isBlocked { get; set; }
-
-        private int sleepSecond = 10;
-        private int limitPageNo = 5;
-
-
+        Category category;
         Action<string> FuncLog;
 
 
-        public Joonggonara(Action<string> funcLog)
+        public Joonggonara(Category cate, Action<string> funcLog) : base()
         {
+            base.parsingTarget = ParsingTarget.중고나라;
+
+            this.category = cate;
+
             FuncLog = funcLog;
-        }
-
-
-        public ParsingTarget GetParsingType()
-        {
-            return ParsingTarget.중고나라;
-        }
-
-
-        public void SetSleepSecond(int sec)
-        {
-            sleepSecond = sec;
-        }
-
-
-        public int GetSleepSecond()
-        {
-            return sleepSecond;
         }
 
 
@@ -96,11 +92,11 @@ namespace LibSiteMonitoring.Parsing
         {
             bool result = false;
 
-            if (isBlocked == true)
+            if (base.isBlocked == true)
             {
                 FuncLog("can't run - blocked");
             }
-            else if (lastItem != null && lastItem.itemDate.AddSeconds(sleepSecond + 2) > DateTime.Now)
+            else if (base.lastItem != null && base.lastItem.itemDate.AddSeconds(base.sleepSecond + 2) > DateTime.Now)
             {
                 FuncLog("can't run - not enough sleep");
             }
@@ -120,13 +116,13 @@ namespace LibSiteMonitoring.Parsing
         /// <returns></returns>
         public List<MonitoringItem> GetMonitoringList()
         {
-            isBlocked = false;
+            base.isBlocked = false;
 
             List<MonitoringItem> result = new List<MonitoringItem>();
 
             if (CanRun() == true)
             {
-                lastRunDate = DateTime.Now;
+                base.lastRunDate = DateTime.Now;
 
                 int pageNo = 1;
                 while (pageNo > 0 && pageNo < limitPageNo)
@@ -138,12 +134,12 @@ namespace LibSiteMonitoring.Parsing
                     {
                         FuncLog($"blocked");
                         pageNo = 0;
-                        isBlocked = true;
+                        base.isBlocked = true;
                         break;
                     }
                     else
                     {
-                        if (lastItem == null)
+                        if (base.lastItem == null)
                         {
                             result.AddRange(lstItem);
                             pageNo = 0;
@@ -151,7 +147,7 @@ namespace LibSiteMonitoring.Parsing
                         }
                         else
                         {
-                            int cntRemove = lstItem.RemoveAll(x => Convert.ToInt64(x.itemId) <= Convert.ToInt64(lastItem.itemId));
+                            int cntRemove = lstItem.RemoveAll(x => Convert.ToInt64(x.itemId) <= Convert.ToInt64(base.lastItem.itemId));
                             result.AddRange(lstItem);
                             pageNo++;
 
@@ -173,7 +169,7 @@ namespace LibSiteMonitoring.Parsing
                 if (result.Count > 0)
                 {
                     string lastItemId = result.Max(x => Convert.ToInt64(x.itemId)).ToString();
-                    lastItem = result.First(x => x.itemId == lastItemId);
+                    base.lastItem = result.First(x => x.itemId == lastItemId);
 
                     FuncLog($"set lastItemId {lastItemId}");
                 }
@@ -342,7 +338,12 @@ namespace LibSiteMonitoring.Parsing
 
                         string articleTitle = liArticle.SelectSingleNode("dl").SelectSingleNode("dt").InnerText.Trim();
 
-                        string articlePrice = liArticle.SelectSingleNode("dl").SelectNodes("dd").Where(x => x.GetAttributeValue("class", "").Contains("price")).FirstOrDefault().InnerText;
+                        string articlePrice = "0";
+                        var objPrice = liArticle.SelectSingleNode("dl").SelectNodes("dd").Where(x => x.GetAttributeValue("class", "").Contains("price")).FirstOrDefault();
+                        if (objPrice != null)
+                        {
+                            articlePrice = objPrice.InnerText;
+                        }
                         articlePrice = articlePrice.Replace("원", "").Replace(",", "").Trim();
 
 

@@ -8,4 +8,10 @@
         public int itemPrice { get; set; }
         public System.DateTime itemDate { get; set; }
     }
+
+    public class ExceptedItem
+    {
+        public MonitoringItem item { get; set; }
+        public string exceptWord { get; set; }
+    }
 }

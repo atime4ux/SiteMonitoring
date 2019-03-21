@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using LibSiteMonitoring.Model;
 
-namespace LibSiteMonitoring.Model
+namespace LibSiteMonitoring
 {
     public class Filter
     {
@@ -147,23 +148,5 @@ namespace LibSiteMonitoring.Model
 
             return result;
         }
-    }
-
-    public class FilterResult
-    {
-        public List<MonitoringItem> lstFiltered { get; set; }
-        public List<ExceptedItem> lstExcepted { get; set; }
-
-        public FilterResult()
-        {
-            lstFiltered = new List<MonitoringItem>();
-            lstExcepted = new List<ExceptedItem>();
-        }
-    }
-
-    public class ExceptedItem
-    {
-        public MonitoringItem item { get; set; }
-        public string exceptWord { get; set; }
     }
 }

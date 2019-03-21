@@ -91,7 +91,7 @@ namespace LibSiteMonitoring
 
 
             lstParsing = new List<IParsing>() {
-                new Joonggonara(WriteStatus)
+                new Joonggonara(Joonggonara.Category.태블릿, WriteStatus)
             };
         }
 
@@ -132,7 +132,7 @@ namespace LibSiteMonitoring
                     //    parsing.SetSleepSecond(Math.Max(minSleepSecond, parsing.GetSleepSecond() / 2));
                     //}
 
-                    WriteStatus($"{parsing.GetParsingType()} : success get {lstAll.Count} items");
+                    WriteStatus($"{parsing.GetParsingTarget()} : success get {lstAll.Count} items");
                     WriteAllItem(lstAll);
 
                     foreach (var info in lstMonitoringInfo)
