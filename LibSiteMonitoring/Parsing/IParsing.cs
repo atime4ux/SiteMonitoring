@@ -1,5 +1,6 @@
 ﻿using LibSiteMonitoring.Model;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LibSiteMonitoring.Parsing
 {
@@ -11,7 +12,7 @@ namespace LibSiteMonitoring.Parsing
 
         int GetSleepSecond();
 
-        List<MonitoringItem> GetMonitoringList();
+        Task<List<MonitoringItem>> GetMonitoringList();
     }
 
     public enum ParsingTarget
