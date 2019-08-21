@@ -347,21 +347,17 @@ namespace LibSiteMonitoring.Parsing
             var objPrice = liArticle.SelectSingleNode("dl").SelectNodes("dd").Where(x => x.GetAttributeValue("class", "").Contains("price")).FirstOrDefault();
             if (objPrice != null)
             {
-              articlePrice = objPrice.InnerText;
+              articlePrice = objPrice.InnerText.Replace("원", "").Replace(",", "").Replace(" ", "").Trim();
             }
-            articlePrice = articlePrice.Replace("원", "").Replace(",", "").Trim();
-
 
             int tmpVal = 0;
-            if (Int32.TryParse(articlePrice, out tmpVal) == true)
-            {
-              articlePrice = string.Format("{0:n0}", tmpVal);
-            }
+            Int32.TryParse(articlePrice, out tmpVal);
+
 
             lstItem.Add(new MonitoringItem()
             {
               itemId = articleId,
-              itemTitle = $"{articleTitle}[{articlePrice}원]",
+              itemTitle = articleTitle,
               itemUrl = articleUrl,
               itemPrice = tmpVal,
               itemDate = DateTime.Now

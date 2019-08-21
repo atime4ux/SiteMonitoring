@@ -91,6 +91,7 @@
       this.txtItemList.ScrollBars = System.Windows.Forms.ScrollBars.Both;
       this.txtItemList.Size = new System.Drawing.Size(760, 100);
       this.txtItemList.TabIndex = 16;
+      this.txtItemList.WordWrap = false;
       // 
       // txtFilteredItemList
       // 
@@ -104,6 +105,7 @@
       this.txtFilteredItemList.ScrollBars = System.Windows.Forms.ScrollBars.Both;
       this.txtFilteredItemList.Size = new System.Drawing.Size(760, 186);
       this.txtFilteredItemList.TabIndex = 17;
+      this.txtFilteredItemList.WordWrap = false;
       // 
       // lblSleepRemain
       // 
