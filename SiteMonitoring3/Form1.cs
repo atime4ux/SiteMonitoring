@@ -120,7 +120,7 @@ namespace SiteMonitoring3
       FormHelper.SetTextBox(txtItemList, "", "N");
       foreach (LibSiteMonitoring.Model.MonitoringItem item in lstItem)
       {
-        FormHelper.SetTextBox(txtItemList, $"{string.Format("{0:n0}", item.itemPrice / 10000.0)}만원 - {item.itemTitle}\r\n", "Y");
+        FormHelper.SetTextBox(txtItemList, $"{string.Format("{0:#,0.######}", item.itemPrice / 10000.0)}만원 - {item.itemTitle}\r\n", "Y");
       }
     }
 
@@ -129,7 +129,7 @@ namespace SiteMonitoring3
     {
       foreach (LibSiteMonitoring.Model.MonitoringItem filtered in lstFilteredItem)
       {
-        FormHelper.SetTextBox(txtFilteredItemList, $"{string.Format("{0:n0}", filtered.itemPrice / 10000.0)}만원 - {filtered.itemTitle}[{System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]\r\n", "Y");
+        FormHelper.SetTextBox(txtFilteredItemList, $"{string.Format("{0:#,0.######}", filtered.itemPrice / 10000.0)}만원 - {filtered.itemTitle}[{System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]\r\n", "Y");
       }
     }
 
