@@ -56,8 +56,7 @@ namespace LibSiteMonitoring.Alarm
       System.Text.StringBuilder msgContent = new System.Text.StringBuilder();
       foreach (MonitoringItem item in lstMonitoringItem)
       {
-        msgContent.AppendLine(item.itemTitle);
-        msgContent.AppendLine(System.Net.WebUtility.UrlEncode(item.itemUrl));
+        msgContent.AppendLine($"<{System.Net.WebUtility.UrlEncode(item.itemUrl)}|{item.itemTitle}>");
         msgContent.AppendLine("=========================");
       }
 
