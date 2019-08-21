@@ -40,7 +40,8 @@
       // 
       // btnRun
       // 
-      this.btnRun.Location = new System.Drawing.Point(193, 12);
+      this.btnRun.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.btnRun.Location = new System.Drawing.Point(566, 12);
       this.btnRun.Name = "btnRun";
       this.btnRun.Size = new System.Drawing.Size(90, 23);
       this.btnRun.TabIndex = 8;
@@ -59,7 +60,8 @@
       // 
       // btnSendTestMsg
       // 
-      this.btnSendTestMsg.Location = new System.Drawing.Point(97, 12);
+      this.btnSendTestMsg.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.btnSendTestMsg.Location = new System.Drawing.Point(470, 12);
       this.btnSendTestMsg.Name = "btnSendTestMsg";
       this.btnSendTestMsg.Size = new System.Drawing.Size(90, 23);
       this.btnSendTestMsg.TabIndex = 5;
@@ -75,7 +77,7 @@
       this.txtLog.Name = "txtLog";
       this.txtLog.ReadOnly = true;
       this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.txtLog.Size = new System.Drawing.Size(300, 237);
+      this.txtLog.Size = new System.Drawing.Size(302, 237);
       this.txtLog.TabIndex = 13;
       // 
       // txtItemList
@@ -105,8 +107,9 @@
       // 
       // lblSleepRemain
       // 
+      this.lblSleepRemain.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.lblSleepRemain.AutoSize = true;
-      this.lblSleepRemain.Location = new System.Drawing.Point(289, 17);
+      this.lblSleepRemain.Location = new System.Drawing.Point(662, 17);
       this.lblSleepRemain.Name = "lblSleepRemain";
       this.lblSleepRemain.Size = new System.Drawing.Size(97, 12);
       this.lblSleepRemain.TabIndex = 18;
@@ -135,8 +138,9 @@
       this.Controls.Add(this.btnSendTestMsg);
       this.Controls.Add(this.label2);
       this.Controls.Add(this.btnRun);
+      this.MinimumSize = new System.Drawing.Size(500, 500);
       this.Name = "Form1";
-      this.Text = "Form1";
+      this.Text = "Site Monitoring";
       this.Load += new System.EventHandler(this.Form1_Load);
       this.ResumeLayout(false);
       this.PerformLayout();
