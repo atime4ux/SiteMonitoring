@@ -213,7 +213,8 @@ namespace LibSiteMonitoring
                     new MonitoringItem() {
                         itemId = "",
                         itemTitle = "Test_" + DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
-                        itemUrl = ""
+                        itemUrlPc = "",
+                        itemUrlMobile = ""
                     }
                 };
 

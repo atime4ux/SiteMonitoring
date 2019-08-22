@@ -52,11 +52,11 @@ namespace LibSiteMonitoring.Parsing
       }
     }
 
-    private string itemBaseUrl
+    private string itemBaseUrlPc
     {
       get
       {
-        return "https://cafe.naver.com/joonggonara?iframe_url=";
+        return "https://cafe.naver.com/joonggonara/{0}";
       }
     }
 
@@ -285,14 +285,12 @@ namespace LibSiteMonitoring.Parsing
               }
             }
 
-            //articleUrl = itemBaseUrl + articleUrl.Replace("&", "%26");
-            articleUrl = string.Format(itemBaseUrlMobile, articleId);
-
             lstItem.Add(new MonitoringItem()
             {
               itemId = articleId,
               itemTitle = articleTitle,
-              itemUrl = articleUrl,
+              itemUrlPc = string.Format(itemBaseUrlPc, articleId),
+              itemUrlMobile = string.Format(itemBaseUrlMobile, articleId),
               itemDate = DateTime.Now
             });
           }
@@ -338,9 +336,6 @@ namespace LibSiteMonitoring.Parsing
               }
             }
 
-            //articleUrl = itemBaseUrl + articleUrl.Replace("&", "%26");
-            articleUrl = string.Format(itemBaseUrlMobile, articleId);
-
             string articleTitle = liArticle.SelectSingleNode("dl").SelectSingleNode("dt").InnerText.Trim();
 
             string articlePrice = "0";
@@ -358,7 +353,8 @@ namespace LibSiteMonitoring.Parsing
             {
               itemId = articleId,
               itemTitle = articleTitle,
-              itemUrl = articleUrl,
+              itemUrlPc = string.Format(itemBaseUrlPc, articleId),
+              itemUrlMobile = string.Format(itemBaseUrlMobile, articleId),
               itemPrice = tmpVal,
               itemDate = DateTime.Now
             });

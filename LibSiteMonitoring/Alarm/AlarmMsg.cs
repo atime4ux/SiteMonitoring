@@ -35,7 +35,8 @@ namespace LibSiteMonitoring.Alarm
       foreach (MonitoringItem item in this.lstMonitoringItem)
       {
         msg.AppendLine(item.itemTitle);
-        msg.AppendLine(item.itemUrl);
+        msg.AppendLine(item.itemUrlPc);
+        msg.AppendLine(item.itemUrlMobile);
         msg.AppendLine("=========================");
       }
 
