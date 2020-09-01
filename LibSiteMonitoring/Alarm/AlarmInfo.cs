@@ -14,9 +14,9 @@ namespace LibSiteMonitoring.Alarm
 
   public class AlarmInfo
   {
-    public AlarmType alarmType { get; set; }
-    public string connectionString { get; set; }
-    private IAlarm alarm { get; set; }
+    public AlarmType AlarmTypeName { get; set; }
+    public string ConnectionString { get; set; }
+    private IAlarm Alarm { get; set; }
 
     private string Title
     {
@@ -31,30 +31,41 @@ namespace LibSiteMonitoring.Alarm
 
     public AlarmInfo(AlarmType type, string conStr)
     {
-      this.alarmType = type;
-      this.connectionString = conStr;
+      this.AlarmTypeName = type;
+      this.ConnectionString = conStr;
+    }
+
+    public static List<AlarmInfo> GetAllAlarmInfo()
+    {
+      return new List<AlarmInfo>() {
+        new AlarmInfo(AlarmType.email, "id;password;from;to"),
+        new AlarmInfo(AlarmType.jandi, "jandiWebhookUrl"),
+        new AlarmInfo(AlarmType.slack, "slackWebhookUrl")
+        };
     }
 
     private bool InitAlarm()
     {
       bool result = true;
 
-      if (string.IsNullOrEmpty(this.connectionString) == false)
+      if (string.IsNullOrEmpty(this.ConnectionString) == false)
       {
-        switch (this.alarmType)
+        switch (this.AlarmTypeName)
         {
           case AlarmType.jandi:
-            alarm = new Jandi(this.connectionString);
+            Alarm = new Jandi(this.ConnectionString);
             break;
           case AlarmType.slack:
-            alarm = new Slack(this.connectionString);
+            Alarm = new Slack(this.ConnectionString);
             break;
           case AlarmType.email:
-            string[] arrCon = this.connectionString.Split(';');
-            alarm = new Mail(id: arrCon[0],
-                            password: arrCon[1],
-                            mailFrom: arrCon[2],
-                            mailTo: arrCon[3]);
+            string[] arrCon = this.ConnectionString.Split(';');
+            Alarm = new Mail(
+              id: arrCon[0]
+              , password: arrCon[1]
+              , mailFrom: arrCon[2]
+              , mailTo: arrCon[3]
+              );
             break;
           default:
             break;
@@ -72,7 +83,7 @@ namespace LibSiteMonitoring.Alarm
     {
       if (InitAlarm() == true)
       {
-        alarm.Send(Title, lst);
+        Alarm.Send(Title, lst);
       }
     }
 
@@ -80,7 +91,7 @@ namespace LibSiteMonitoring.Alarm
     {
       if (InitAlarm() == true)
       {
-        alarm.Send(title, content);
+        Alarm.Send(title, content);
       }
     }
   }

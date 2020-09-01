@@ -1,4 +1,5 @@
 ﻿using LibSiteMonitoring;
+using LibSiteMonitoring.Model;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,28 +11,24 @@ namespace SiteMonitoring3
   public partial class Form1 : Form
   {
     FormHelper FormHelper = new FormHelper();
-    LibSiteMonitoring.Helper.Common commonHelper = new LibSiteMonitoring.Helper.Common();
-
 
     System.Threading.Thread threadMainJob;
 
+    bool LoopFlag = false;
 
-    bool loopFlag = false;
-
-
-    private string lastMonitoringInfoFullPath
+    private string LastMonitoringInfoFullPath
     {
       get
       {
         string path = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
-        string fileName = "lastMonitoringInfo.log";
+        string fileName = "LastMonitoringInfo.log";
 
         return path + "\\" + fileName;
       }
     }
 
 
-    public string monitoringInfoJson
+    public string MonitoringInfoJson
     {
       get
       {
@@ -68,11 +65,11 @@ namespace SiteMonitoring3
     }
 
 
-    private void changeRunningState()
+    private void ChangeRunningState()
     {
       System.Threading.Thread changeStateThread;
 
-      if (loopFlag)
+      if (LoopFlag)
       {
         changeStateThread = new System.Threading.Thread(new System.Threading.ThreadStart(delegate
         {
@@ -115,30 +112,32 @@ namespace SiteMonitoring3
       FormHelper.SetTextBox(txtLog, status + "\r\n", "Y");
     }
 
-    private void WriteAllItem(List<LibSiteMonitoring.Model.MonitoringItem> lstItem)
+    private void WriteAllItem(List<MonitoringItem> lstItem)
     {
       FormHelper.SetTextBox(txtItemList, "", "N");
-      foreach (LibSiteMonitoring.Model.MonitoringItem item in lstItem)
+      foreach (MonitoringItem item in lstItem)
       {
-        FormHelper.SetTextBox(txtItemList, $"{string.Format("{0:#,0.######}", item.itemPrice / 10000.0)}만원 - {item.itemTitle}\r\n", "Y");
+        FormHelper.SetTextBox(txtItemList, $"{string.Format("{0:#,0.######}", item.ItemPrice / 10000.0)}만원 - {item.ItemTitle}\r\n", "Y");
       }
     }
 
 
-    private void WriteFilteredItem(List<LibSiteMonitoring.Model.MonitoringItem> lstFilteredItem)
+    private void WriteFilteredItem(List<MonitoringItem> lstFilteredItem)
     {
-      foreach (LibSiteMonitoring.Model.MonitoringItem filtered in lstFilteredItem)
+      foreach (MonitoringItem filtered in lstFilteredItem)
       {
-        FormHelper.SetTextBox(txtFilteredItemList, $"{string.Format("{0:#,0.######}", filtered.itemPrice / 10000.0)}만원 - {filtered.itemTitle}[{System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]\r\n", "Y");
+        FormHelper.SetTextBox(txtFilteredItemList
+          , $"{string.Format("{0:#,0.######}", filtered.ItemPrice / 10000.0)}만원 - {filtered.ItemTitle}[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]\r\n", "Y");
       }
     }
 
 
-    private void WriteExceptedItem(List<LibSiteMonitoring.Model.ExceptedItem> lstExceptedItem)
+    private void WriteExceptedItem(List<ExceptedItem> lstExceptedItem)
     {
-      foreach (LibSiteMonitoring.Model.ExceptedItem excepted in lstExceptedItem)
+      foreach (ExceptedItem excepted in lstExceptedItem)
       {
-        FormHelper.SetTextBox(txtFilteredItemList, $"{excepted.item.itemTitle}[{System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]제외됨({excepted.exceptWord})\r\n", "Y");
+        FormHelper.SetTextBox(txtFilteredItemList
+          , $"{excepted.Item.ItemTitle}[{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}]제외됨({excepted.ExceptWord})\r\n", "Y");
       }
     }
 
@@ -151,33 +150,40 @@ namespace SiteMonitoring3
 
     private void SaveMonitoringInfoFile()
     {
-      commonHelper.OverwriteFile(lastMonitoringInfoFullPath, txtMonitoringInfoJson.Text);
+      LibSiteMonitoring.Helper.CommonHelper.OverwriteFile(LastMonitoringInfoFullPath, txtMonitoringInfoJson.Text);
     }
 
 
     private string GetLastMonitoringInfoFile()
     {
-      return commonHelper.ReadFile(lastMonitoringInfoFullPath);
+      return LibSiteMonitoring.Helper.CommonHelper.ReadFile(LastMonitoringInfoFullPath);
     }
 
 
     private bool GetLoopFlag()
     {
-      return loopFlag;
+      return LoopFlag;
     }
 
 
     private void StartAndStop()
     {
-      if (!loopFlag)
+      if (!LoopFlag)
       {
         //start
         SaveMonitoringInfoFile();
 
-        Monitoring monitoring = new Monitoring(monitoringInfoJson, GetLoopFlag, WriteStatus, WriteAllItem, WriteFilteredItem, WriteExceptedItem, WriteSleepStatus);
+        LogActionGroup logAction = new LogActionGroup(
+          writeStatus: WriteStatus
+          , writeAllItem: WriteAllItem
+          , writeFilteredItem: WriteFilteredItem
+          , writeExceptedItem: WriteExceptedItem
+          , writeSleepStatus: WriteSleepStatus);
 
-        loopFlag = true;
-        changeRunningState();
+        Monitoring monitoring = new Monitoring(MonitoringInfoJson, GetLoopFlag, logAction);
+
+        LoopFlag = true;
+        ChangeRunningState();
         threadMainJob = new System.Threading.Thread(new System.Threading.ThreadStart(monitoring.RunMonitoring));
         threadMainJob.Name = "loopStart";
         threadMainJob.Start();
@@ -185,8 +191,8 @@ namespace SiteMonitoring3
       else
       {
         //stop
-        loopFlag = false;
-        changeRunningState();
+        LoopFlag = false;
+        ChangeRunningState();
       }
     }
 
@@ -197,7 +203,7 @@ namespace SiteMonitoring3
     }
 
 
-    void Application_ApplicationExit(object sender, EventArgs e)
+    private void Application_ApplicationExit(object sender, EventArgs e)
     {
       if (threadMainJob != null)
       {
@@ -208,7 +214,7 @@ namespace SiteMonitoring3
 
     private void btnSendTestMsg_Click(object sender, EventArgs e)
     {
-      if (Monitoring.SendTestAlarm(monitoringInfoJson))
+      if (Monitoring.SendTestAlarm(MonitoringInfoJson))
       {
         MessageBox.Show("테스트 알림 전송");
       }

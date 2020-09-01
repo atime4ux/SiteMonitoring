@@ -7,30 +7,24 @@ namespace LibSiteMonitoring.Alarm
 {
   public class Jandi : IAlarm
   {
-    private string msgColor
-    {
-      get
-      {
-        return "#FAC11B";
-      }
-    }
+    private readonly string MsgColor = "#FAC11B";
 
-    public string webHookUrl { get; set; }
+    public string WebHookUrl { get; set; }
 
     public Jandi(string url)
     {
-      this.webHookUrl = url;
+      this.WebHookUrl = url;
     }
 
     public void Send(string msgTitle, string msgContent)
     {
-      SendJandi(this.webHookUrl, msgTitle, this.msgColor, msgTitle, msgContent);
+      SendJandi(this.WebHookUrl, msgTitle, this.MsgColor, msgTitle, msgContent);
     }
 
     public void Send(string msgTitle, List<MonitoringItem> lstMonitoringItem)
     {
       string msgContent = new AlarmMsg(lstMonitoringItem).MakeMessage();
-      SendJandi(this.webHookUrl, "사이트 모니터링", this.msgColor, msgTitle, msgContent);
+      SendJandi(this.WebHookUrl, "사이트 모니터링", this.MsgColor, msgTitle, msgContent);
     }
 
     private void SendJandi(string webHookUrl, string jandiTitle, string jandiColor, string msgTitle, string msgContent)
@@ -42,11 +36,11 @@ namespace LibSiteMonitoring.Alarm
           body = jandiTitle,
           connectColor = jandiColor,
           connectInfo = new object[] {
-                    new {
-                        title = msgTitle,
-                        description = msgContent
-                    }
-                }
+            new {
+              title = msgTitle,
+              description = msgContent
+              }
+            }
         });
 
 

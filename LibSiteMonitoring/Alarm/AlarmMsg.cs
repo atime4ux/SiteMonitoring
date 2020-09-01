@@ -5,38 +5,35 @@ namespace LibSiteMonitoring.Alarm
 {
   public class AlarmMsg
   {
-    private List<MonitoringItem> lstMonitoringItem { get; set; }
+    private List<MonitoringItem> LstMonitoringItem { get; set; }
 
     public AlarmMsg(List<MonitoringItem> lst)
     {
-      this.lstMonitoringItem = lst;
-    }
-
-    public string Title
-    {
-      get
-      {
-        return "Site Monitoring - " + System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-      }
-    }
-
-    public string Message
-    {
-      get
-      {
-        return MakeMessage();
-      }
+      this.LstMonitoringItem = lst;
     }
 
     public string MakeMessage()
     {
       System.Text.StringBuilder msg = new System.Text.StringBuilder();
 
-      foreach (MonitoringItem item in this.lstMonitoringItem)
+      foreach (MonitoringItem item in this.LstMonitoringItem)
       {
-        msg.AppendLine(item.itemTitle);
-        msg.AppendLine(item.itemUrlPc);
-        msg.AppendLine(item.itemUrlMobile);
+        msg.AppendLine(item.ItemTitle);
+        msg.AppendLine(item.ItemUrlPc);
+        msg.AppendLine(item.ItemUrlMobile);
+        msg.AppendLine("=========================");
+      }
+
+      return msg.ToString();
+    }
+
+    public string MakeSlackMessage()
+    {
+      System.Text.StringBuilder msg = new System.Text.StringBuilder();
+      foreach (MonitoringItem item in this.LstMonitoringItem)
+      {
+        msg.AppendLine(item.ItemTitle);
+        msg.AppendLine($"<{System.Net.WebUtility.UrlEncode(item.ItemUrlPc)}|PC> <{System.Net.WebUtility.UrlEncode(item.ItemUrlMobile)}|Mobile>");
         msg.AppendLine("=========================");
       }
 

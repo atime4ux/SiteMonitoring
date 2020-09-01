@@ -1,17 +1,18 @@
 ﻿using LibSiteMonitoring.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 
 namespace LibSiteMonitoring.Alarm
 {
-  public class Slack : IAlarm
+	public class Slack : IAlarm
   {
-    public string webHookUrl { get; set; }
+    public string WebHookUrl { get; set; }
 
     public Slack(string url)
     {
-      this.webHookUrl = url;
+      this.WebHookUrl = url;
     }
 
     public void Send(string msgTitle, string msgContent)
@@ -21,13 +22,18 @@ namespace LibSiteMonitoring.Alarm
         username = msgTitle,
         text = msgContent
       });
-      SendSlack(this.webHookUrl, jsonData);
+      SendSlack(this.WebHookUrl, jsonData);
     }
 
     public void Send(string msgTitle, List<MonitoringItem> lstMonitoringItem)
     {
-      string jsonData = MakeSlackMessage(msgTitle, lstMonitoringItem);
-      SendSlack(this.webHookUrl, jsonData);
+      string jsonData = JsonConvert.SerializeObject(new
+      {
+        username = msgTitle,
+        text = new AlarmMsg(lstMonitoringItem).MakeSlackMessage()
+      });
+
+      SendSlack(this.WebHookUrl, jsonData);
     }
 
     private void SendSlack(string webHookUrl, string jsonData)
@@ -35,6 +41,9 @@ namespace LibSiteMonitoring.Alarm
       if (string.IsNullOrEmpty(webHookUrl) == false)
       {
         var client = new HttpClient();
+
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
         client.DefaultRequestHeaders.Clear();
         client.DefaultRequestHeaders.Add("ContentType", "application/x-www-form-urlencoded; charset=utf-8");
 
@@ -49,25 +58,6 @@ namespace LibSiteMonitoring.Alarm
         }
         var strResponseContent = response.Content.ReadAsStringAsync().Result;
       }
-    }
-
-    private string MakeSlackMessage(string msgTitle, List<MonitoringItem> lstMonitoringItem)
-    {
-      System.Text.StringBuilder msgContent = new System.Text.StringBuilder();
-      foreach (MonitoringItem item in lstMonitoringItem)
-      {
-        msgContent.AppendLine(item.itemTitle);
-        msgContent.AppendLine($"<{System.Net.WebUtility.UrlEncode(item.itemUrlPc)}|PC> <{System.Net.WebUtility.UrlEncode(item.itemUrlMobile)}|Mobile>");
-        msgContent.AppendLine("=========================");
-      }
-
-      string jsonData = JsonConvert.SerializeObject(new
-      {
-        username = msgTitle,
-        text = msgContent.ToString()
-      });
-
-      return jsonData;
     }
   }
 }

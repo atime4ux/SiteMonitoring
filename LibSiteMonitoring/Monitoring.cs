@@ -1,6 +1,6 @@
 ﻿using LibSiteMonitoring.Alarm;
 using LibSiteMonitoring.Model;
-using LibSiteMonitoring.Parsing;
+using LibSiteMonitoring.ParsingModule;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,246 +8,252 @@ using System.Linq;
 
 namespace LibSiteMonitoring
 {
-  public class Monitoring
-  {
-    private bool mainJobTrace = false;//mainJob실행여부
-    private List<MonitoringInfo> lstMonitoringInfo = null;
+	public class Monitoring
+	{
+		private bool MainJobTrace = false;//mainJob실행여부
+		private List<MonitoringInfo> LstMonitoringInfo = null;
 
 
-    public int minSleepSecond
-    {
-      get
-      {
-        return 10;
-      }
-    }
-    private bool loopFlag
-    {
-      get
-      {
-        bool result = false;
+		public int MinSleepSecond
+		{
+			get
+			{
+				return 10;
+			}
+		}
 
-        if (mainJobTrace == false)
-        {
-          result = true;
-        }
-        else
-        {
-          result = GetLoopFlag();
-        }
+		private bool LoopFlag
+		{
+			get
+			{
+				bool result = false;
 
-        return result;
-      }
-    }
+				if (MainJobTrace == false)
+				{
+					result = true;
+				}
+				else
+				{
+					if (GetLoopFlag != null)
+					{
+						result = GetLoopFlag();
+					}
+				}
 
-
-    private Func<bool> GetLoopFlag;
-    private Action<string> WriteStatus;
-    private Action<List<MonitoringItem>> WriteAllItem;
-    private Action<List<MonitoringItem>> WriteFilteredItem;
-    private Action<List<ExceptedItem>> WriteExceptedItem;
-    private Action<string> WriteSleepStatus;
+				return result;
+			}
+		}
 
 
-    private List<IParsing> lstParsing = null;
-
-    public Monitoring(string json)
-    {
-      Init(json: json,
-          getLoopFlag: null,
-          writeStatus: null,
-          writeAllItem: null,
-          writeFilteredItem: null,
-          writeExceptedItem: null,
-          writeSleepStatus: null);
-    }
-
-    public Monitoring(string json, Func<bool> getLoopFlag, Action<string> writeStatus, Action<List<MonitoringItem>> writeAllItem, Action<List<MonitoringItem>> writeFilteredItem, Action<List<ExceptedItem>> writeExceptedItem, Action<string> writeSleepStatus)
-    {
-      Init(json: json,
-          getLoopFlag: getLoopFlag,
-          writeStatus: writeStatus,
-          writeAllItem: writeAllItem,
-          writeFilteredItem: writeFilteredItem,
-          writeExceptedItem: writeExceptedItem,
-          writeSleepStatus: writeSleepStatus);
-    }
-
-    private void Init(string json, Func<bool> getLoopFlag, Action<string> writeStatus, Action<List<MonitoringItem>> writeAllItem, Action<List<MonitoringItem>> writeFilteredItem, Action<List<ExceptedItem>> writeExceptedItem, Action<string> writeSleepStatus)
-    {
-      try
-      {
-        this.lstMonitoringInfo = JsonConvert.DeserializeObject<List<MonitoringInfo>>(json);
-      }
-      catch (Exception ex)
-      { }
-
-      GetLoopFlag = getLoopFlag != null ? getLoopFlag : (() => { return false; }); ;
-      WriteStatus = writeStatus != null ? writeStatus : (x => { });
-      WriteAllItem = writeAllItem != null ? writeAllItem : (x => { });
-      WriteFilteredItem = writeFilteredItem != null ? writeFilteredItem : (x => { });
-      WriteExceptedItem = writeExceptedItem != null ? writeExceptedItem : (x => { });
-      WriteSleepStatus = writeSleepStatus != null ? writeSleepStatus : (x => { });
+		private Func<bool> GetLoopFlag;
+		public LogActionGroup LogAction { get; set; }
 
 
-      lstParsing = new List<IParsing>() {
-          new Joonggonara(Joonggonara.Category.노트북, WriteStatus)
-      };
-    }
+		private List<IParsingModule> LstParsingModule = null;
 
-    private bool ValidateMonitoringInfo()
-    {
-      bool result = false;
+		public Monitoring(string json)
+		{
+			Init(json: json
+				, getLoopFlag: null
+				, logAction: new LogActionGroup(null, null, null, null, null));
+		}
 
-      if (lstMonitoringInfo != null
-          && (lstMonitoringInfo.Count(x => x.lstKeyword.Count(y => y.requireKeywords.Trim().Length > 0) > 0) > 0
-              || lstMonitoringInfo.Count(x => x.lstKeyword.Count(y => y.optionKeywords.Trim().Length > 0) > 0) > 0
-              || lstMonitoringInfo.Count(x => x.lstKeyword.Count(y => y.minPrice > 0 || y.maxPrice > 0) > 0) > 0))
-      {
-        result = true;
-      }
+		public Monitoring(string json
+			, Func<bool> getLoopFlag
+			, LogActionGroup logAction)
+		{
+			Init(json: json
+				, getLoopFlag: getLoopFlag
+				, logAction: logAction);
+		}
 
-      return result;
-    }
+		private void Init(string json
+			, Func<bool> getLoopFlag
+			, LogActionGroup logAction)
+		{
+			List<IParsingModule> lstParsingModule = new List<IParsingModule>() {
+					new Joonggonara(logAction.WriteStatus)
+			};
 
-    private async void RunParser()
-    {
-      if (ValidateMonitoringInfo() == true)
-      {
-        WriteStatus("start");
+			Init(json: json
+				, getLoopFlag: getLoopFlag
+				, logAction: logAction
+				, lstParsingModule: lstParsingModule);
+		}
 
-        foreach (var parsing in lstParsing)
-        {
-          WriteStatus("downloading data");
+		private void Init(string json
+			, Func<bool> getLoopFlag
+			, LogActionGroup logAction
+			, List<IParsingModule> lstParsingModule)
+		{
+			try
+			{
+				LstMonitoringInfo = JsonConvert.DeserializeObject<List<MonitoringInfo>>(json);
+			}
+			catch (Exception ex)
+			{ }
 
-          List<MonitoringItem> lstAll = await parsing.GetMonitoringList();
+			GetLoopFlag = getLoopFlag != null ? getLoopFlag : (() => { return false; }); ;
+			LogAction = logAction;
+			LstParsingModule = lstParsingModule;
+		}
 
-          //능동적 슬립은 보류
-          //if (lstAll.Count == 0)
-          //{
-          //    parsing.SetSleepSecond(parsing.GetSleepSecond() + minSleepSecond);
-          //}
-          //else
-          //{
-          //    parsing.SetSleepSecond(Math.Max(minSleepSecond, parsing.GetSleepSecond() / 2));
-          //}
+		private bool ValidateMonitoringInfo()
+		{
+			if (LstMonitoringInfo != null)
+			{
+				foreach (var monitoringInfo in LstMonitoringInfo)
+				{
+					foreach (var keyword in monitoringInfo.LstKeyword)
+					{
+						if (keyword.RequireKeywords.Trim().Length > 0
+							|| keyword.OptionKeywords.Trim().Length > 0
+							|| keyword.MinPrice > 0
+							|| keyword.MaxPrice > 0)
+						{
+							return true;
+						}
+					}
+				}
+			}
+			
+			return false;
+		}
 
-          WriteStatus($"{parsing.GetParsingTarget()} : success get {lstAll.Count} items");
-          WriteAllItem(lstAll);
+		private async void RunParser()
+		{
+			if (ValidateMonitoringInfo() == true)
+			{
+				LogAction.WriteStatus("start");
 
-          foreach (var info in lstMonitoringInfo)
-          {
-            FilterResult filterResult = new Filter().FilterItems(lstAll, info.lstKeyword);
-            WriteFilteredItem(filterResult.lstFiltered);
-            WriteExceptedItem(filterResult.lstExcepted);
+				foreach (var parsing in LstParsingModule)
+				{
+					LogAction.WriteStatus("downloading data");
 
-            if (filterResult.lstFiltered.Count > 0)
-            {
-              WriteStatus($"found {filterResult.lstFiltered.Count} items");
-              info.SendAlarm(filterResult.lstFiltered);
-            }
-          }
-        }
-      }
-      else
-      {
-        WriteStatus("invalid monitoring info");
-      }
+					List<MonitoringItem> lstAll = await parsing.GetMonitoringList();
 
+					//능동적 슬립은 보류
+					//if (lstAll.Count == 0)
+					//{
+					//    parsing.SetSleepSecond(parsing.GetSleepSecond() + minSleepSecond);
+					//}
+					//else
+					//{
+					//    parsing.SetSleepSecond(Math.Max(minSleepSecond, parsing.GetSleepSecond() / 2));
+					//}
 
-      WriteStatus("finish\r\n====================");
-    }
+					LogAction.WriteStatus($"{parsing.GetParsingTarget()} : success get {lstAll.Count} items");
+					LogAction.WriteAllItem(lstAll);
 
+					foreach (var info in LstMonitoringInfo)
+					{
+						MonitorResult filterResult = Keyword.FilterItems(lstAll, info.LstKeyword);
+						LogAction.WriteFilteredItem(filterResult.FilteredItems);
+						LogAction.WriteExceptedItem(filterResult.ExceptedItems);
 
-    public void RunMonitoring()
-    {
-      while (loopFlag == true)
-      {
-        mainJobTrace = true;
-
-        //스레딩처리할 필요 없음
-        //System.Threading.Thread threadSubJob = new System.Threading.Thread(new System.Threading.ThreadStart(SubJob));
-        //threadSubJob.Name = "DownloadAndParsing";
-        //threadSubJob.Start();
-        //threadSubJob.Join();
-        RunParser();
-
-        if (loopFlag == true)
-        {
-          WriteStatus($"start sleep {minSleepSecond} sec");
-          for (int i = 0; i < minSleepSecond; i++)
-          {
-            if (loopFlag == true)
-            {
-              WriteSleepStatus($"sleep remain {(minSleepSecond - i).ToString()}");
-              System.Threading.Thread.Sleep(1000);
-            }
-            else
-            {
-              break;
-            }
-          }
-          WriteSleepStatus("");
-          WriteStatus("end sleep");
-        }
-      }
-    }
+						if (filterResult.FilteredItems.Count > 0)
+						{
+							LogAction.WriteStatus($"found {filterResult.FilteredItems.Count} items");
+							info.SendAlarm(filterResult.FilteredItems);
+						}
+					}
+				}
+			}
+			else
+			{
+				LogAction.WriteStatus("invalid monitoring info");
+			}
 
 
-    public static bool SendTestAlarm(string monitoringInfoJson)
-    {
-      bool result = true;
+			LogAction.WriteStatus("finish\r\n====================");
+		}
 
 
-      List<MonitoringInfo> lstMonitoringInfo = null;
-      try
-      {
-        lstMonitoringInfo = JsonConvert.DeserializeObject<List<MonitoringInfo>>(monitoringInfoJson);
-      }
-      catch (Exception ex)
-      { }
+		public void RunMonitoring()
+		{
+			while (LoopFlag == true)
+			{
+				MainJobTrace = true;
 
-      if (lstMonitoringInfo != null && lstMonitoringInfo.FirstOrDefault() != null)
-      {
-        List<MonitoringItem> lstTest = new List<MonitoringItem>() {
-                    new MonitoringItem() {
-                        itemId = "",
-                        itemTitle = "Test_" + DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
-                        itemUrlPc = "",
-                        itemUrlMobile = ""
-                    }
-                };
+				//스레딩처리할 필요 없음
+				//System.Threading.Thread threadSubJob = new System.Threading.Thread(new System.Threading.ThreadStart(SubJob));
+				//threadSubJob.Name = "DownloadAndParsing";
+				//threadSubJob.Start();
+				//threadSubJob.Join();
+				RunParser();
 
-        try
-        {
-          lstMonitoringInfo.FirstOrDefault().SendAlarm(lstTest);
-        }
-        catch (Exception ex)
-        {
-          result = false;
-        }
-      }
+				if (LoopFlag == true)
+				{
+					LogAction.WriteStatus($"start sleep {MinSleepSecond} sec");
+					for (int i = 0; i < MinSleepSecond; i++)
+					{
+						if (LoopFlag == true)
+						{
+							LogAction.WriteSleepStatus($"sleep remain {(MinSleepSecond - i).ToString()}");
+							System.Threading.Thread.Sleep(1000);
+						}
+						else
+						{
+							break;
+						}
+					}
+					LogAction.WriteSleepStatus("");
+					LogAction.WriteStatus("end sleep");
+				}
+			}
+		}
 
-      return result;
-    }
 
-    public static List<MonitoringInfo> GetSampleMonitoringInfo()
-    {
-      List<MonitoringInfo> sample = new List<MonitoringInfo>() {
-                new MonitoringInfo() {
-                    lstKeyword = new List<Keyword>() {
-                        new Keyword("필수 검색어1", "선택 검색어1", "제외 검색어1", 0, 0),
-                        new Keyword("필수 검색어2", "선택 검색어2", "제외 검색어2", 0, 0)
-                    },
-                    lstAlarmInfo = new List<AlarmInfo>() {
-                        new AlarmInfo(AlarmType.email, "id;password;from;to"),
-                        new AlarmInfo(AlarmType.jandi, "jandiWebhookUrl"),
-                        new AlarmInfo(AlarmType.slack, "slackWebhookUrl")
-                    }
-                }
-            };
+		public static bool SendTestAlarm(string monitoringInfoJson)
+		{
+			bool result = true;
 
-      return sample;
-    }
-  }
+
+			List<MonitoringInfo> lstMonitoringInfo = null;
+			try
+			{
+				lstMonitoringInfo = JsonConvert.DeserializeObject<List<MonitoringInfo>>(monitoringInfoJson);
+			}
+			catch (Exception ex)
+			{ }
+
+			if (lstMonitoringInfo != null && lstMonitoringInfo.FirstOrDefault() != null)
+			{
+				List<MonitoringItem> lstTest = new List<MonitoringItem>() {
+					new MonitoringItem() {
+						ItemId = "",
+						ItemTitle = "Test_" + DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"),
+						ItemUrlPc = "",
+						ItemUrlMobile = ""
+						}
+					};
+
+				try
+				{
+					lstMonitoringInfo.FirstOrDefault().SendAlarm(lstTest);
+				}
+				catch (Exception ex)
+				{
+					result = false;
+				}
+			}
+
+			return result;
+		}
+
+		public static List<MonitoringInfo> GetSampleMonitoringInfo()
+		{
+			List<MonitoringInfo> sample = new List<MonitoringInfo>() {
+				new MonitoringInfo() {
+					LstKeyword = new List<Keyword>() {
+						new Keyword("필수 검색어1", "선택 검색어1", "제외 검색어1", 0, 0),
+						new Keyword("필수 검색어2", "선택 검색어2", "제외 검색어2", 0, 0)
+						},
+					LstAlarmInfo = AlarmInfo.GetAllAlarmInfo()
+					}
+				};
+
+			return sample;
+		}
+	}
 }

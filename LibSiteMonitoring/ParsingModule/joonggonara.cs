@@ -6,109 +6,88 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace LibSiteMonitoring.Parsing
+namespace LibSiteMonitoring.ParsingModule
 {
   /// <summary>
   /// 중고나라
   /// </summary>
-  public class Joonggonara : BaseParsing, IParsing
+  public class Joonggonara : BaseParsingModule, IParsingModule
   {
-    public enum Category
+    Action<string> _FuncLog;
+    private void FuncLog(string logMsg)
     {
-      [StringValue("")]
-      전체,
-      [StringValue("749")]
-      태블릿,
-      [StringValue("334")]
-      노트북
+      if (_FuncLog == null)
+      {
+        _FuncLog = (x) => { };
+      }
+
+      _FuncLog(logMsg);
     }
 
-    /// <summary>
-    /// search.boardtype
-    /// L - 제목
-    /// I - 앨범(금액 노출)
-    /// </summary>
-    private string BoardType
+
+    private string BoardType { get; set; }
+    private string MenuId { get; set; }
+    private string ItemListUrl { get; set; }
+    private string ItemDetailBaseUrlDesktop { get; set; }
+    private string ItemDetailBaseUrlMobile { get; set; }
+    private int LimitPageNo { get; set; }
+
+		public dynamic DefaultConfig
     {
       get
       {
-        return "I";
-      }
-    }
+        Dictionary<string, string> dicBoardCategory = new Dictionary<string, string>() {
+          { "제목", "L" },
+          { "앨범", "I" }//금액노출
+        };
+        string boardType = dicBoardCategory["앨범"];
 
-    private string MenuId
-    {
-      get
-      {
-        return new Common().GetStringValue(category);
-      }
-    }
+        Dictionary<string, string> dicMenuCategory = new Dictionary<string, string>() {
+          { "전체", "" },
+          { "태블릿", "749" },
+          { "노트북", "334" }
+        };
+        string menuId = dicMenuCategory["전체"];
 
-    private string listUrl
-    {
-      get
-      {
-        return $"https://cafe.naver.com/ArticleList.nhn?search.clubid=10050146&search.boardtype={BoardType}&search.questionTab=A&search.totalCount=151&search.menuid={MenuId}" + "&search.page=";
-      }
-    }
+        int limitPageNo = 5;
 
-    private string itemBaseUrlPc
-    {
-      get
-      {
-        return "https://cafe.naver.com/joonggonara/{0}";
-      }
-    }
-
-    private string itemBaseUrlMobile
-    {
-      get
-      {
-        return "https://m.cafe.naver.com/ArticleRead.nhn?clubid=10050146&articleid={0}&page=1&boardtype=L";
-      }
-    }
-
-    private int limitPageNo
-    {
-      get
-      {
-        return 5;
+        return new
+        {
+          BoardCategory = dicBoardCategory,
+          BoardType = boardType,
+          MenuCategory = dicMenuCategory,
+          MenuId = menuId,
+          ItemListUrl = $"https://cafe.naver.com/ArticleList.nhn?search.clubid=10050146&search.boardtype={boardType}&search.questionTab=A&search.totalCount=151&search.menuid={menuId}&search.page=",
+          ItemDetailBaseUrlDesktop = "https://cafe.naver.com/joonggonara/{0}",
+          ItemDetailBaseUrlMobile = "https://m.cafe.naver.com/ArticleRead.nhn?clubid=10050146&articleid={0}&page=1&boardtype=L",
+          LimitPageNo = limitPageNo
+        };
       }
     }
 
 
-    Category category;
-    Action<string> FuncLog;
-
-
-    public Joonggonara(Category cate, Action<string> funcLog) : base()
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="funcLog">로그 기록 메소드</param>
+		public Joonggonara(Action<string> funcLog = null) : base(SiteName.중고나라)
     {
-      base.parsingTarget = ParsingTarget.중고나라;
-
-      this.category = cate;
-
-      FuncLog = funcLog;
-    }
+      _FuncLog = funcLog;
 
 
-    private bool CanRun()
-    {
-      bool result = false;
-
-      if (base.isBlocked == true)
+      dynamic siteConfig = LoadSiteConfig();
+      if (siteConfig == null)
       {
-        FuncLog("can't run - blocked");
-      }
-      else if (base.lastItem != null && base.lastItem.itemDate.AddSeconds(base.sleepSecond - 1) > DateTime.Now)
-      {
-        FuncLog("can't run - not enough sleep");
-      }
-      else
-      {
-        result = true;
+        siteConfig = DefaultConfig;
+        SaveSiteConfig(siteConfig);
       }
 
-      return result;
+      BoardType = siteConfig.BoardType;
+      MenuId = siteConfig.MenuId;
+      ItemListUrl = siteConfig.ItemListUrl;
+      ItemDetailBaseUrlDesktop = siteConfig.ItemDetailBaseUrlDesktop;
+      ItemDetailBaseUrlMobile = siteConfig.ItemDetailBaseUrlMobile;
+      LimitPageNo = siteConfig.LimitPageNo;
     }
 
 
@@ -119,52 +98,103 @@ namespace LibSiteMonitoring.Parsing
     /// <returns></returns>
     public async Task<List<MonitoringItem>> GetMonitoringList()
     {
-      base.isBlocked = false;
+      Func<bool> CanRun = () => {
+        bool canRunResult = false;
+
+        if (base.IsBlocked == true)
+        {
+          FuncLog("can't run - blocked");
+        }
+        else if (base.LastItem != null && base.LastItem.ItemDate.AddSeconds(base.SleepSecond - 1) > DateTime.Now)
+        {
+          FuncLog("can't run - not enough sleep");
+        }
+        else
+        {
+          canRunResult = true;
+        }
+
+        return canRunResult;
+      };
+
+
+      Func<int, Task<HtmlAgilityPack.HtmlDocument>> getData = async (pageNo) => {
+        HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+
+        WebRequest request = null;
+
+        try
+        {
+          request = WebRequest.Create(ItemListUrl + pageNo.ToString());
+          using (WebResponse response = await request.GetResponseAsync())
+          {
+            doc.Load(response.GetResponseStream());
+            response.Close();
+          }
+        }
+        catch (Exception ex)
+        {
+          CommonHelper.WriteLog(ex.ToString());
+          FuncLog($"err : {ex.Message}");
+        }
+
+        if (doc.DocumentNode.HasChildNodes == false)
+        {
+          FuncLog($"download data is empty");
+          doc = null;
+        }
+
+        return doc;
+      };
+
+
+
+      base.IsBlocked = false;
 
       List<MonitoringItem> result = new List<MonitoringItem>();
 
       if (CanRun() == true)
       {
-        base.lastRunDate = DateTime.Now;
+        base.LastRunDate = DateTime.Now;
 
-        int pageNo = 1;
-        while (pageNo > 0 && pageNo < limitPageNo)
+        int curPageNo = 1;
+        while (curPageNo > 0 && curPageNo < LimitPageNo)
         {
-          FuncLog($"downloading page {pageNo}");
+          FuncLog($"downloading page {curPageNo}");
 
-          var domData = await GetData(pageNo);
+          var domData = await getData(curPageNo);
           List<MonitoringItem> lstItem = ParsingHTMLdocument(domData);
 
           if (lstItem.Count == 0)
           {
             FuncLog($"blocked");
-            pageNo = 0;
-            base.isBlocked = true;
+            curPageNo = 0;
+            base.IsBlocked = true;
             break;
           }
           else
           {
-            if (base.lastItem == null)
+            if (base.LastItem == null)
             {
               result.AddRange(lstItem);
-              pageNo = 0;
+              curPageNo = 0;
               break;
             }
             else
             {
-              int cntRemove = lstItem.RemoveAll(x => Convert.ToInt64(x.itemId) <= Convert.ToInt64(base.lastItem.itemId));
+              int cntRemove = lstItem.RemoveAll(x => Convert.ToInt64(x.ItemId) <= Convert.ToInt64(base.LastItem.ItemId));
               result.AddRange(lstItem);
-              pageNo++;
+              curPageNo++;
 
               if (cntRemove > 0)
               {
                 FuncLog($"stop downloading");
-                pageNo = 0;
+                curPageNo = 0;
                 break;
               }
               else
               {
-                FuncLog($"max - {lstItem.Max(x => Convert.ToInt64(x.itemId))}, min - {lstItem.Min(x => Convert.ToInt64(x.itemId))}");
+                FuncLog($"max - {lstItem.Max(x => Convert.ToInt64(x.ItemId))}, min - {lstItem.Min(x => Convert.ToInt64(x.ItemId))}");
               }
             }
           }
@@ -173,8 +203,8 @@ namespace LibSiteMonitoring.Parsing
 
         if (result.Count > 0)
         {
-          string lastItemId = result.Max(x => Convert.ToInt64(x.itemId)).ToString();
-          base.lastItem = result.First(x => x.itemId == lastItemId);
+          string lastItemId = result.Max(x => Convert.ToInt64(x.ItemId)).ToString();
+          base.LastItem = result.First(x => x.ItemId == lastItemId);
 
           FuncLog($"set lastItemId {lastItemId}");
         }
@@ -182,45 +212,6 @@ namespace LibSiteMonitoring.Parsing
 
       return result;
     }
-
-    /// <summary>
-    /// html dom 반환
-    /// </summary>
-    /// <param name="pageNo"></param>
-    private async Task<HtmlAgilityPack.HtmlDocument> GetData(int pageNo)
-    {
-      HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-
-      WebRequest request = null;
-
-      try
-      {
-        request = WebRequest.Create(listUrl + pageNo.ToString());
-        using (WebResponse response = await request.GetResponseAsync())
-        {
-          doc.Load(response.GetResponseStream());
-          response.Close();
-        }
-      }
-      catch (Exception ex)
-      {
-        new Helper.Common().WriteLog(ex.ToString());
-        FuncLog($"err : {ex.Message}");
-      }
-
-      if (doc.DocumentNode.HasChildNodes)
-      {
-        ParsingHTMLdocument(doc);
-      }
-      else
-      {
-        FuncLog($"download data is empty");
-        doc = null;
-      }
-
-      return doc;
-    }
-
 
     /// <summary>
     /// html dom을MonitoringItem 목록으로 반환
@@ -287,11 +278,11 @@ namespace LibSiteMonitoring.Parsing
 
             lstItem.Add(new MonitoringItem()
             {
-              itemId = articleId,
-              itemTitle = articleTitle,
-              itemUrlPc = string.Format(itemBaseUrlPc, articleId),
-              itemUrlMobile = string.Format(itemBaseUrlMobile, articleId),
-              itemDate = DateTime.Now
+              ItemId = articleId,
+              ItemTitle = articleTitle,
+              ItemUrlPc = string.Format(ItemDetailBaseUrlDesktop, articleId),
+              ItemUrlMobile = string.Format(ItemDetailBaseUrlMobile, articleId),
+              ItemDate = DateTime.Now
             });
           }
         }
@@ -351,12 +342,12 @@ namespace LibSiteMonitoring.Parsing
 
             lstItem.Add(new MonitoringItem()
             {
-              itemId = articleId,
-              itemTitle = articleTitle,
-              itemUrlPc = string.Format(itemBaseUrlPc, articleId),
-              itemUrlMobile = string.Format(itemBaseUrlMobile, articleId),
-              itemPrice = tmpVal,
-              itemDate = DateTime.Now
+              ItemId = articleId,
+              ItemTitle = articleTitle,
+              ItemUrlPc = string.Format(ItemDetailBaseUrlDesktop, articleId),
+              ItemUrlMobile = string.Format(ItemDetailBaseUrlMobile, articleId),
+              ItemPrice = tmpVal,
+              ItemDate = DateTime.Now
             });
           }
         }

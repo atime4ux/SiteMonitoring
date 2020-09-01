@@ -5,54 +5,54 @@ namespace LibSiteMonitoring.Alarm
 {
   public class Mail : IAlarm
   {
-    Helper.Common commonHelper = new Helper.Common();
-
-    public string accountId { get; set; }
-    public string accountPassword { get; set; }
-    public string fromAddress { get; set; }
-    public string toAddress { get; set; }
+    public string AccountId { get; set; }
+    public string AccountPassword { get; set; }
+    public string FromAddress { get; set; }
+    public string ToAddress { get; set; }
 
     public Mail(string id, string password)
     {
-      this.accountId = id;
-      this.accountPassword = password;
-      this.fromAddress = id;
-      this.toAddress = id;
+      this.AccountId = id;
+      this.AccountPassword = password;
+      this.FromAddress = id;
+      this.ToAddress = id;
     }
 
     public Mail(string id, string password, string mailFrom, string mailTo)
     {
-      this.accountId = id;
-      this.accountPassword = password;
-      this.fromAddress = mailFrom;
-      this.toAddress = mailTo;
+      this.AccountId = id;
+      this.AccountPassword = password;
+      this.FromAddress = mailFrom;
+      this.ToAddress = mailTo;
     }
 
     public void Send(string msgTitle, string msgContent)
     {
       if (ValidateMailAccountInfo() == true)
       {
-        commonHelper.SendMail(this.accountId, this.accountPassword, this.fromAddress, this.toAddress, msgTitle, msgContent);
+        Helper.CommonHelper.SendMail(this.AccountId
+          , this.AccountPassword
+          , this.FromAddress
+          , this.ToAddress
+          , msgTitle
+          , msgContent);
       }
     }
 
     public void Send(string msgTitle, List<MonitoringItem> lstMonitoringItem)
     {
-      if (ValidateMailAccountInfo() == true)
-      {
-        string msgContent = new AlarmMsg(lstMonitoringItem).MakeMessage();
-        commonHelper.SendMail(this.accountId, this.accountPassword, this.fromAddress, this.toAddress, msgTitle, msgContent);
-      }
+      string msgContent = new AlarmMsg(lstMonitoringItem).MakeMessage();
+      Send(msgTitle, msgContent);
     }
 
     private bool ValidateMailAccountInfo()
     {
       bool result = false;
 
-      if (this.accountId.Length > 0
-          && this.accountPassword.Length > 0
-          && this.toAddress.Length > 0
-          && this.fromAddress.Length > 0)
+      if (this.AccountId.Length > 0
+          && this.AccountPassword.Length > 0
+          && this.ToAddress.Length > 0
+          && this.FromAddress.Length > 0)
       {
         result = true;
       }
