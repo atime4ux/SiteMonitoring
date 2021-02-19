@@ -120,34 +120,11 @@ namespace LibSiteMonitoring
 			return false;
 		}
 
-		private DateTime LastSendAliveTime = DateTime.MinValue;
-		private void SendAliveSignal()
-		{
-			int termMinute = 60;//1시간마다 생존신호 발송
-			DateTime dateNow = DateTime.Now;
-			if (LastSendAliveTime.AddMinutes(termMinute) < dateNow)
-			{
-				List<MonitoringItem> lstTest = new List<MonitoringItem>() {
-					new MonitoringItem() {
-						ItemId = "",
-						ItemTitle = "AliveSignal_" + dateNow.ToString("yyyy-MM-dd hh:mm:ss"),
-						ItemUrlPc = "",
-						ItemUrlMobile = ""
-						}
-					};
-				LstMonitoringInfo.First().SendAlarm(lstTest);
-
-				LastSendAliveTime = dateNow;
-			}
-		}
-
 		private async void RunParser()
 		{
 			if (ValidateMonitoringInfo() == true)
 			{
 				LogAction.WriteStatus("start");
-
-				SendAliveSignal();
 
 				foreach (var parsing in LstParsingModule)
 				{
@@ -170,7 +147,7 @@ namespace LibSiteMonitoring
 
 					foreach (var info in LstMonitoringInfo)
 					{
-						MonitorResult filterResult = Keyword.FilterItems(lstAll, info.LstKeyword);
+						MonitorResult filterResult = info.FilterItems(lstAll);
 						LogAction.WriteFilteredItem(filterResult.FilteredItems);
 						LogAction.WriteExceptedItem(filterResult.ExceptedItems);
 

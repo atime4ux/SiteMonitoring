@@ -1,6 +1,7 @@
 ﻿using LibSiteMonitoring.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System;
 
 namespace LibSiteMonitoring.Alarm
 {
@@ -16,7 +17,7 @@ namespace LibSiteMonitoring.Alarm
   {
     public AlarmType AlarmTypeName { get; set; }
     public string ConnectionString { get; set; }
-    private IAlarm Alarm { get; set; }
+		private IAlarm Alarm { get; set; }
 
     private string Title
     {
